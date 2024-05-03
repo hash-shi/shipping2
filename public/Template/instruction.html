@@ -1,0 +1,762 @@
+<div class="all">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<table class="w225">
+		<tr class="h9">
+			<!-- 106 -->
+			<td class="w18 hCenter">受付日時</td>
+			<td class="w17 hCenter blrs-n">_orderYear_</td>
+			<td class="w5  hCenter blrs-n">年</td>
+			<td class="w10 hCenter blrs-n">_orderMonth_</td>
+			<td class="w5  hCenter blrs-n">月</td>
+			<td class="w10 hCenter blrs-n">_orderDay_</td>
+			<td class="w5  hCenter blrs-n">日</td>
+			<td class="w17 fSize12 blrs-n">AM<br/>PM<div class="circleOrder"></div></td>
+
+			<td class="w4 hCenter" style="font-size: 8px;">受<br/>注<br/>者</td>
+			<td class="w16"></td>
+			<!-- 120 -->
+			<td class="w991 pl"      style="border-style: none; font-size: 20px;"><a>　受 注 連 絡 票（出荷指示書）　</a></td>
+			<td class="w992 hCenter" style="border-style: none;">㈱　羽　根</td>
+			<td class="w993 hCenter" style="border-style: none;">_printCount_</td>
+			
+		</tr>
+	</table>
+
+	<table class="w225">
+		<tr class="h9">
+			<!-- 106 -->
+			<td class="w18 hCenter">受注№</td>
+			<td class="w26 hCenter">_orderNo_</td>
+			<td class="w17 hCenter">指示№</td>
+			<td class="w25"></td>
+			<td class="w4 hCenter" style="font-size: 8px;">発<br/>注<br/>者</td>
+			<td class="w16"></td>
+
+			<!-- 120 -->
+			<td class="w20 hCenter">出荷日</td>
+			<td class="w11 hCenter blrs-n">_shipMonth_</td>
+			<td class="w5  hCenter blrs-n">月</td>
+			<td class="w10 hCenter blrs-n">_shipDay_</td>
+			<td class="w6  hCenter blrs-n">日</td>
+
+			<td class="w18 hCenter">納品日</td>
+			<td class="w10 hCenter blrs-n">_deliveryMonth_</td>
+			<td class="w5 hCenter blrs-n">月</td>
+			<td class="w7 hCenter blrs-n">_deliveryDay_</td>
+			<td class="w5 hCenter blrs-n">日</td>
+
+			<td class="w10   fSize12 blrs-n">AM<br/>PM<div class="circleDelivery"></div></td>
+			<td class="w14-2 hCenter bls-n">_deliveryTime_時着</td>
+		</tr>
+	</table>
+
+	<table class="w225">
+		<tr class="h9">
+			<!-- 106 -->
+			<td class="w18 hCenter pl">得意先</td>
+			<td class="w20 hCenter vBottom">_customerCode_</td>
+			<td class="w67-8 pl">_customerName_</td>
+			<!-- 119 -->
+			<td class="w20 hCenter">納入先</td>
+			<td class="w17 hCenter vBottom">_deliveryCode_</td>
+			<td class="w82-2 pl">_deliveryName_</td>
+		</tr>
+	</table>
+
+	<table class="w225">
+		<tr class="h9">
+			<!-- 106 -->
+			<td class="w18 hCenter">仕入先</td>
+			<td class="w20 hCenter vBottom">_supplierCode_</td>
+			<td class="w67-8 pl">_supplierName_</td>
+			<!-- 119 -->
+			<td class="w20 hCenter">倉庫</td>
+			<td class="w17 hCenter vBottom">_warehouseCode_</td>
+			<td class="w82-2 pl">_warehouseName_</td>
+		</tr>
+	</table>
+
+	<table class="w225">
+		<tr class="h9">
+			<!-- 106 -->
+			<td class="w18 hCenter">運転手</td>
+			<td class="w20 hCenter vBottom">_driverCode_</td>
+			<td class="w30   brs-n pl">_driverName_</td>
+			<td class="w37-9 bls-n hCenter"><img src=_driverBarcode_ /></td>
+
+			<!-- 119 -->
+			<td class="w20 hCenter">運送会社</td>
+			<td class="w17 hCenter vBottom">_truckerCode_</td>
+			<td class="w39-4 pl">_truckerName_</td>
+			<td class="w20 hCenter">便区分</td>
+			<td class="W23-1 hCenter">_flights_回目</td>
+		</tr>
+	</table>
+
+	<table class="w225">
+		<tr class="h9">
+			<td class="w18 hCenter">運賃</td>
+			<td class="w31 hRight pr">_fee_</td>
+			<td class="w18 hCenter">付加</td>
+			<td class="w30 hRight pr">_addFee_</td>
+			<td class="w32 hCenter">有料道路代</td>
+			<td class="w28 hRight pr">_highwayFee_</td>
+			<td class="w18"></td>
+			<td class="w27 hCenter">運賃付替区分</td>
+			<td class="W23-1 hCenter">他 ・ 自
+				<div class="circle3"></div>
+			</td>
+		</tr>
+	</table>
+
+	<p class="h2" style="margin:0;"></p>
+
+	<table class="w225 h99">
+		<tr class="fSize13">
+            <th class="w16-5" rowspan="2" colspan="2">取引<br>区分</th>
+            <th class="w52 bbs-d">商品コード</th>
+            <th class="w18" rowspan="2">入数</th>
+            <th class="w42" colspan="2">積込予定数</th>
+            <th class="w42" colspan="2">積込実数</th>
+            <th class="w18" rowspan="2">積込場所</th>
+            <th class="w37" rowspan="2">備考</th>
+		</tr>
+
+		<tr class="fSize13">
+			<th class="w52 bts-d">商品名</th>
+            <th class="w18">袋数</th>
+            <th class="w24">数量</th>
+            <th class="w18">袋数</th>
+            <th class="w24">数量</th>
+		</tr>
+
+        <tr class="h5">
+            <td class="w5-5 hCenter" rowspan="2">1</td>
+            <td class="w11  hCenter" rowspan="2">_Hcode0_</td>
+            <td class="hRight pr fSize11 bbs-d">_itemCode0_</td>
+            <td class="hCenter"   rowspan="2">_QtyPerCtn0_<div id="circle20" class="circle2"></div></td>
+            <td class="hCenter"   rowspan="2">_QtyCtn10_</td>
+            <td class="hRight pr" rowspan="2">_Qty10_</td>
+            <td class="hCenter"   rowspan="2">_QtyCtn20_</td>
+            <td class="hRight pr" rowspan="2">_Qty20_</td>
+            <td class="hCenter fSize13" rowspan="2">_LoadingPlaceName0_</td>
+            <td class="fSize12 pl bbs-n">_Remark10_</td>
+        </tr>
+        <tr class="h5">
+            <td class="fSize13 pl bts-d">_itemName0_</td>
+            <td class="fSize12 pl bts-d">_Remark20_</td>
+        </tr>
+
+        <tr class="h5">
+            <td class="hCenter" rowspan="2">2</td>
+            <td class="hCenter" rowspan="2">_Hcode1_</td>
+            <td class="hRight pr fSize11 bbs-d">_itemCode1_</td>
+            <td class="hCenter"   rowspan="2">_QtyPerCtn1_<div id="circle21" class="circle2"></div></td>
+            <td class="hCenter"   rowspan="2">_QtyCtn11_</td>
+            <td class="hRight pr" rowspan="2">_Qty11_</td>
+            <td class="hCenter"   rowspan="2">_QtyCtn21_</td>
+            <td class="hRight pr" rowspan="2">_Qty21_</td>
+            <td class="hCenter fSize13" rowspan="2">_LoadingPlaceName1_</td>
+            <td class="fSize12 pl bbs-n">_Remark11_</td>
+        </tr>
+        <tr class="h5">
+            <td class="fSize13 pl bts-d">_itemName1_</td>
+            <td class="fSize12 pl bts-d">_Remark21_</td>
+        </tr>
+
+        <tr class="h5">
+            <td class="hCenter" rowspan="2">3</td>
+            <td class="hCenter" rowspan="2">_Hcode2_</td>
+            <td class="hRight pr fSize11 bbs-d">_itemCode2_</td>
+            <td class="hCenter"   rowspan="2">_QtyPerCtn2_<div id="circle22" class="circle2"></div></td>
+            <td class="hCenter"   rowspan="2">_QtyCtn12_</td>
+            <td class="hRight pr" rowspan="2">_Qty12_</td>
+            <td class="hCenter"   rowspan="2">_QtyCtn22_</td>
+            <td class="hRight pr" rowspan="2">_Qty22_</td>
+            <td class="hCenter fSize13" rowspan="2">_LoadingPlaceName2_</td>
+            <td class="fSize12 pl bbs-n">_Remark12_</td>
+        </tr>
+        <tr class="h5">
+            <td class="fSize13 pl bts-d">_itemName2_</td>
+            <td class="fSize12 pl bts-d">_Remark22_</td>
+        </tr>
+
+        <tr class="h5">
+            <td class="hCenter" rowspan="2">4</td>
+            <td class="hCenter" rowspan="2">_Hcode3_</td>
+            <td class="hRight pr fSize11 bbs-d">_itemCode3_</td>
+            <td class="hCenter"   rowspan="2">_QtyPerCtn3_<div id="circle23" class="circle2"></div></td>
+            <td class="hCenter"   rowspan="2">_QtyCtn13_</td>
+            <td class="hRight pr" rowspan="2">_Qty13_</td>
+            <td class="hCenter"   rowspan="2">_QtyCtn23_</td>
+            <td class="hRight pr" rowspan="2">_Qty23_</td>
+            <td class="hCenter fSize13" rowspan="2">_LoadingPlaceName3_</td>
+            <td class="fSize12 pl bbs-n">_Remark13_</td>
+        </tr>
+        <tr class="h5">
+            <td class="fSize13 pl bts-d">_itemName3_</td>
+            <td class="fSize12 pl bts-d">_Remark23_</td>
+        </tr>
+
+        <tr class="h5">
+            <td class="hCenter" rowspan="2">5</td>
+            <td class="hCenter" rowspan="2">_Hcode4_</td>
+            <td class="hRight pr fSize11 bbs-d">_itemCode4_</td>
+            <td class="hCenter"   rowspan="2">_QtyPerCtn4_<div id="circle24" class="circle2"></div></td>
+            <td class="hCenter"   rowspan="2">_QtyCtn14_</td>
+            <td class="hRight pr" rowspan="2">_Qty14_</td>
+            <td class="hCenter"   rowspan="2">_QtyCtn24_</td>
+            <td class="hRight pr" rowspan="2">_Qty24_</td>
+            <td class="hCenter fSize13" rowspan="2">_LoadingPlaceName4_</td>
+            <td class="fSize12 pl bbs-n">_Remark14_</td>
+        </tr>
+        <tr class="h5">
+            <td class="fSize13 pl bts-d">_itemName4_</td>
+            <td class="fSize12 pl bts-d">_Remark24_</td>
+        </tr>
+
+        <tr class="h5">
+            <td class="hCenter" rowspan="2">6</td>
+            <td class="hCenter" rowspan="2">_Hcode5_</td>
+            <td class="hRight pr fSize11 bbs-d">_itemCode5_</td>
+            <td class="hCenter"   rowspan="2">_QtyPerCtn5_<div id="circle25" class="circle2"></div></td>
+            <td class="hCenter"   rowspan="2">_QtyCtn15_</td>
+            <td class="hRight pr" rowspan="2">_Qty15_</td>
+            <td class="hCenter"   rowspan="2">_QtyCtn25_</td>
+            <td class="hRight pr" rowspan="2">_Qty25_</td>
+            <td class="hCenter fSize13" rowspan="2">_LoadingPlaceName5_</td>
+            <td class="fSize12 pl bbs-n">_Remark15_</td>
+        </tr>
+        <tr class="h5">
+            <td class="fSize13 pl bts-d">_itemName5_</td>
+            <td class="fSize12 pl bts-d">_Remark25_</td>
+        </tr>
+
+        <tr class="h5">
+            <td class="hCenter" rowspan="2">7</td>
+            <td class="hCenter" rowspan="2">_Hcode6_</td>
+            <td class="hRight pr fSize11 bbs-d">_itemCode6_</td>
+            <td class="hCenter"   rowspan="2">_QtyPerCtn6_<div id="circle26" class="circle2"></div></td>
+            <td class="hCenter"   rowspan="2">_QtyCtn16_</td>
+            <td class="hRight pr" rowspan="2">_Qty16_</td>
+            <td class="hCenter"   rowspan="2">_QtyCtn26_</td>
+            <td class="hRight pr" rowspan="2">_Qty26_</td>
+            <td class="hCenter fSize13" rowspan="2">_LoadingPlaceName6_</td>
+            <td class="fSize12 pl bbs-n">_Remark16_</td>
+        </tr>
+        <tr class="h5">
+            <td class="fSize13 pl bts-d">_itemName6_</td>
+            <td class="fSize12 pl bts-d">_Remark26_</td>
+        </tr>
+
+        <tr class="h5">
+            <td class="hCenter" rowspan="2">8</td>
+            <td class="hCenter" rowspan="2">_Hcode7_</td>
+            <td class="hRight pr fSize11 bbs-d">_itemCode7_</td>
+            <td class="hCenter"   rowspan="2">_QtyPerCtn7_<div id="circle27" class="circle2"></div></td>
+            <td class="hCenter"   rowspan="2">_QtyCtn17_</td>
+            <td class="hRight pr" rowspan="2">_Qty17_</td>
+            <td class="hCenter"   rowspan="2">_QtyCtn27_</td>
+            <td class="hRight pr" rowspan="2">_Qty27_</td>
+            <td class="hCenter fSize13" rowspan="2">_LoadingPlaceName7_</td>
+            <td class="fSize12 pl bbs-n">_Remark17_</td>
+        </tr>
+        <tr class="h5">
+            <td class="fSize13 pl bts-d">_itemName7_</td>
+            <td class="fSize12 pl bts-d">_Remark27_</td>
+        </tr>
+
+	</table>
+
+	<table class="w225 fSize13">
+		<tr class="h8">
+			<td class="w27 hCenter">続き・有・無</td>
+			<td class="w7  hCenter" style="writing-mode: vertical-rl;" rowspan="2">記<br/>事</td>
+			<td class="w23 hCenter">送り状</td>
+
+			<td class="w58 brs-n bbs-n pl">_invoiceNote_</td>
+			<td class="w55 bls-n bbs-n hCenter vMiddle"><img src=_barcode_ /></td>
+
+			<td class="w8  hCenter" style="writing-mode: vertical-rl;" rowspan="2">手<br/>配<br/>者</td>
+			<td class="w20" rowspan="2"></td>
+			<td class="w8  hCenter" style="writing-mode: vertical-rl;" rowspan="2">入<br/>力<br/>者</td>
+			<td class="w19" rowspan="2">_QtySum_</td>
+		</tr>
+		<tr class="h8">
+			<td class="hCenter">／</td>
+			<td class="hCenter">納品書</td>
+			<td class="bts-d pl" colspan="2">_deliveryNote_</td>
+		</tr>
+	</table>
+</div>
+<style>
+	.all {
+		padding-top: 4mm;
+		/* margin-top: 4mm; */
+		margin-left: 18mm;
+		/* border: solid 1px; */
+		height: 169mm;
+		min-height: 169mm;
+		max-height: 169mm;
+		width: 225mm;
+		min-width: 225mm;
+		max-width: 225mm;
+	}
+
+	table {
+		border-collapse: collapse;
+		margin-top: -1px;
+		/* width: 880px; */
+		padding: 0px;
+		box-sizing: border-box;
+	}
+
+	table td {
+		border: solid 1px;
+		/* margin-left: -1px;  */
+		padding: 0px;
+		box-sizing: border-box;
+		margin-left: -1px;
+		font-family: Yu Mincho;
+		white-space: nowrap;
+		overflow:hidden
+	}
+
+	table th {
+		border: solid 1px;
+		box-sizing: border-box;
+		padding: 0px;
+		font-family: Yu Mincho;
+	}
+
+	.circleOrder {
+		width: 20px;
+		height: 10px;
+		border-radius: 50px;
+		border: solid 2px rgb(0, 0, 0);
+		position: absolute; 
+		margin-left: -2px;
+		margin-top: _orderMgn_;	/*-38px or -18px*/
+		display:_orderCircleDis_ ;
+	}
+
+	.circleDelivery {
+		width: 20px;
+		height: 10px;
+		border-radius: 50px;
+		border: solid 2px rgb(0, 0, 0);
+		position: absolute; 
+		margin-left: -2px;
+		margin-top: _deliveryMgn_;	/*-38px or -18px*/
+		display:_deliveryCircleDis_ ;
+	}
+
+	.circle2 {
+		width: 40px;
+		height: 30px;
+		border-radius: 35px;
+		border: solid 2px rgb(0, 0, 0);
+		position: absolute; 
+		margin-left: 12px;
+		margin-top: -27px;
+		/* display:_circleDis_ ; */
+	}
+
+	.circle3 {
+		width: 20px;
+		height: 20px;
+		border-radius: 35px;
+		border: solid 2px rgb(0, 0, 0);
+		position: absolute; 
+		margin-top: -22px;
+		margin-left: _feeClassMgn_; /*12px or 52px*/
+		display:_feeClassDis_ ;
+	}
+
+	#circle20{
+		display:_circle20_ ;
+	}
+
+	#circle21{
+		display:_circle21_ ;
+	}
+
+	#circle22{
+		display:_circle22_ ;
+	}
+
+	#circle23{
+		display:_circle23_ ;
+	}
+
+	#circle24{
+		display:_circle24_ ;
+	}
+
+	#circle25{
+		display:_circle25_ ;
+	}
+
+
+	#circle26{
+		display:_circle26_ ;
+	}
+
+	#circle27{
+		display:_circle27_ ;
+	}
+
+	/* ----------------------------------------------------------- */
+
+	div {
+		padding: 0px;
+	}
+
+	a {
+		text-decoration: none;
+		border-bottom: 1px solid black;
+	}
+
+	.blrs-n {
+		border-left-style: none;
+		border-right-style: none;
+	}
+
+	.bls-n {
+		border-left-style: none;
+	}
+
+	.brs-n {
+		border-right-style: none;
+	}
+
+	.bts-n {
+		border-top-style: none;
+	}
+
+	.bbs-n {
+		border-bottom-style: none;
+	}
+
+
+	.bts-d {
+		border-top-style: dotted
+	}
+
+	.bbs-d {
+		border-bottom-style: dotted
+	}
+
+	.pr {
+		padding-right: 5px;
+	}
+
+	.pl {
+		padding-left: 5px;
+	}
+
+	.hCenter {
+		text-align: center;
+	}
+	.hRight {
+		text-align: right;
+	}
+
+	.vMiddle {
+		vertical-align: middle;
+	}
+	.vBottom {
+		vertical-align: bottom;
+	}
+
+	.fSize10 {
+		font-size: 10px;
+	}
+	.fSize11 {
+		font-size: 11px;
+	}
+	.fSize12 {
+		font-size: 12px;
+	}
+	.fSize13 {
+		font-size: 13px;
+	}
+	.fSize14 {
+		font-size: 14px;
+	}
+
+	.h2 {
+		height: 2mm;
+		min-height: 2mm;
+		max-height: 2mm;
+	}
+
+	.h5 {
+		height: calc(5.5mm + 0px);
+		min-height: calc(5.5mm + 0px);
+		max-height: calc(5.5mm + 0px);
+	}
+
+	.h8 {
+		height: 8mm;
+		min-height: 8mm;
+		max-height: 8mm;
+	}
+
+	.h9 {
+		height: 9mm;
+		min-height: 9mm;
+		max-height: 9mm;
+	}
+
+	.h99 {
+		height: 99mm;
+		min-height: 99mm;
+		max-height: 99mm;
+	}
+
+	.w4 {
+		width: 4mm;
+		min-width: 4mm;
+		max-width: 4mm;
+	}
+	.w5 {
+		width: 5mm;
+		min-width: 5mm;
+		max-width: 5mm;
+	}
+	.w5-5 {
+		width: 5.5mm;
+		min-width: 5.5mm;
+		max-width: 5.5mm;
+	}
+	.w6 {
+		width: 6mm;
+		min-width: 6mm;
+		max-width: 6mm;
+	}
+	.w7 {
+		width: 7mm;
+		min-width: 7mm;
+		max-width: 7mm;
+	}
+	.w8 {
+		width: 8mm;
+		min-width: 8mm;
+		max-width: 8mm;
+	}
+	.w10 {
+		width: 10mm;
+		min-width: 10mm;
+		max-width: 10mm;
+	}
+	.w11 {
+		width: 11mm;
+		min-width: 11mm;
+		max-width: 11mm;
+	}
+	.w12 {
+		width: 12mm;
+		min-width: 12mm;
+		max-width: 12mm;
+	}
+	.w14-2 {
+		width: 14.2mm;
+		min-width: 14.2mm;
+		max-width: 14.2mm;
+	}
+	.w16 {
+		width: 16mm;
+		min-width: 16mm;
+		max-width: 16mm;
+	}
+	.w16-5 {
+		width: 16.5mm;
+		min-width: 16.5mm;
+		max-width: 16.5mm;
+	}
+	.w17 {
+		width: 17mm;
+		min-width: 17mm;
+		max-width: 17mm;
+	}
+	.w18 {
+		width: 18mm;
+		min-width: 18mm;
+		max-width: 18mm;
+	}
+	.w19 {
+		width: 19mm;
+		min-width: 19mm;
+		max-width: 19mm;
+	}
+	.w20 {
+		width: 20mm;
+		min-width: 20mm;
+		max-width: 20mm;
+	}
+	.w21 {
+		width: 21mm;
+		min-width: 21mm;
+		max-width: 21mm;
+	}
+	.w23 {
+		width: 23mm;
+		min-width: 23mm;
+		max-width: 23mm;
+	}
+	.w23-1 {
+		width: 23.1mm;
+		min-width: 23.1mm;
+		max-width: 23.1mm;
+	}
+	.w24 {
+		width: 24mm;
+		min-width: 24mm;
+		max-width: 24mm;
+	}
+	.w25 {
+		width: 25mm;
+		min-width: 25mm;
+		max-width: 25mm;
+	}
+	.w26 {
+		width: 26mm;
+		min-width: 26mm;
+		max-width: 26mm;
+	}
+	.w27 {
+		width: 27mm;
+		min-width: 27mm;
+		max-width: 27mm;
+	}
+	.w28 {
+		width: 28mm;
+		min-width: 28mm;
+		max-width: 28mm;
+	}
+	.w30 {
+		width: 30mm;
+		min-width: 30mm;
+		max-width: 30mm;
+	}
+	.w31 {
+		width: 31mm;
+		min-width: 31mm;
+		max-width: 31mm;
+	}
+	.w32 {
+		width: 32mm;
+		min-width: 32mm;
+		max-width: 32mm;
+	}
+	.w33 {
+		width: 33mm;
+		min-width: 33mm;
+		max-width: 33mm;
+	}
+	.w37 {
+		width: 37mm;
+		min-width: 37mm;
+		max-width: 37mm;
+	}
+	.w37-9 {
+		width: 37.9mm;
+		min-width: 37.9mm;
+		max-width: 37.9mm;
+	}
+	.w39-4 {
+		width: 39.4mm;
+		min-width: 39.4mm;
+		max-width: 39.4mm;
+	}
+	.w40 {
+		width: 40mm;
+		min-width: 40mm;
+		max-width: 40mm;
+	}
+	.w42 {
+		width: 42mm;
+		min-width: 42mm;
+		max-width: 42mm;
+	}
+	.w50 {
+		width: 50mm;
+		min-width: 50mm;
+		max-width: 50mm;
+	}
+	.w52 {
+		width: 52mm;
+		min-width: 52mm;
+		max-width: 52mm;
+	}
+	.w55 {
+		width: 55mm;
+		min-width: 55mm;
+		max-width: 55mm;
+	}
+	.w56 {
+		width: 56mm;
+		min-width: 56mm;
+		max-width: 56mm;
+	}
+	.w58 {
+		width: 58mm;
+		min-width: 58mm;
+		max-width: 58mm;
+	}
+	.w63 {
+		width: 63mm;
+		min-width: 63mm;
+		max-width: 63mm;
+	}
+	.w67-8 {
+		width: 67.8mm;
+		min-width: 67.8mm;
+		max-width: 67.8mm;
+	}
+	.w68 {
+		width: 68mm;
+		min-width: 68mm;
+		max-width: 68mm;
+	}
+	.w82 {
+		width: 82mm;
+		min-width: 82mm;
+		max-width: 82mm;
+	}
+	.w82-2 {
+		width: 82.2mm;
+		min-width: 82.2mm;
+		max-width: 82.2mm;
+	}
+	.w119 {
+		width: 119mm;
+		min-width: 119mm;
+		max-width: 119mm;
+	}
+
+	.w225 {
+		width: 225mm;
+		min-width: 225mm;
+		max-width: 225mm;
+	}
+
+	.w991 {
+		width: 80mm;
+		min-width: 80mm;
+		max-width: 80mm;
+	}
+
+	.w992 {
+		width: 32mm;
+		min-width: 32mm;
+		max-width: 32mm;
+	}
+
+	.w993 {
+		width: 7mm;
+		min-width: 7mm;
+		max-width: 7mm;
+	}
+</style>

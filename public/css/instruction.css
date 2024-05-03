@@ -1,0 +1,463 @@
+.all {
+	padding-top: 4mm;
+	/* margin-top: 4mm; */
+	margin-left: 18mm;
+	/* border: solid 1px; */
+	height: 169mm;
+	min-height: 169mm;
+	max-height: 169mm;
+	width: 225mm;
+	min-width: 225mm;
+	max-width: 225mm;
+}
+
+table {
+	border-collapse: collapse;
+	margin-top: -1px;
+	/* width: 880px; */
+	padding: 0px;
+	box-sizing: border-box;
+}
+
+table td {
+	border: solid 1px;
+	/* margin-left: -1px;  */
+	padding: 0px;
+	box-sizing: border-box;
+	margin-left: -1px;
+	font-family: Yu Mincho;
+	white-space: nowrap;
+	overflow:hidden
+}
+
+table th {
+	border: solid 1px;
+	box-sizing: border-box;
+	padding: 0px;
+	font-family: Yu Mincho;
+}
+
+.circleOrder {
+	width: 20px;
+	height: 10px;
+	border-radius: 50px;
+	border: solid 2px rgb(0, 0, 0);
+	position: absolute; 
+	margin-left: -2px;
+	margin-top: _orderMgn_;	/*-38px or -18px*/
+	display:_orderCircleDis_ ;
+}
+
+.circleDelivery {
+	width: 20px;
+	height: 10px;
+	border-radius: 50px;
+	border: solid 2px rgb(0, 0, 0);
+	position: absolute; 
+	margin-left: -2px;
+	margin-top: _deliveryMgn_;	/*-38px or -18px*/
+	display:_deliveryCircleDis_ ;
+}
+
+.circle2 {
+	width: 40px;
+	height: 30px;
+	border-radius: 35px;
+	border: solid 2px rgb(0, 0, 0);
+	position: absolute; 
+	margin-left: 12px;
+	margin-top: -27px;
+	/* display:_circleDis_ ; */
+}
+
+.circle3 {
+	width: 20px;
+	height: 20px;
+	border-radius: 35px;
+	border: solid 2px rgb(0, 0, 0);
+	position: absolute; 
+	margin-top: -22px;
+	margin-left: _feeClassMgn_; /*12px or 52px*/
+	display:_feeClassDis_ ;
+}
+
+#circle20{
+	display:_circle20_ ;
+}
+
+#circle21{
+	display:_circle21_ ;
+}
+
+#circle22{
+	display:_circle22_ ;
+}
+
+#circle23{
+	display:_circle23_ ;
+}
+
+#circle24{
+	display:_circle24_ ;
+}
+
+#circle25{
+	display:_circle25_ ;
+}
+
+
+#circle26{
+	display:_circle26_ ;
+}
+
+#circle27{
+	display:_circle27_ ;
+}
+
+/* ----------------------------------------------------------- */
+
+div {
+	padding: 0px;
+}
+
+a {
+	text-decoration: none;
+	border-bottom: 1px solid black;
+}
+
+.blrs-n {
+	border-left-style: none;
+	border-right-style: none;
+}
+
+.bls-n {
+	border-left-style: none;
+}
+
+.brs-n {
+	border-right-style: none;
+}
+
+.bts-n {
+	border-top-style: none;
+}
+
+.bbs-n {
+	border-bottom-style: none;
+}
+
+
+.bts-d {
+	border-top-style: dotted
+}
+
+.bbs-d {
+	border-bottom-style: dotted
+}
+
+.pr {
+	padding-right: 5px;
+}
+
+.pl {
+	padding-left: 5px;
+}
+
+.hCenter {
+	text-align: center;
+}
+.hRight {
+	text-align: right;
+}
+
+.vMiddle {
+	vertical-align: middle;
+}
+.vBottom {
+	vertical-align: bottom;
+}
+
+.fSize10 {
+	font-size: 10px;
+}
+.fSize11 {
+	font-size: 11px;
+}
+.fSize12 {
+	font-size: 12px;
+}
+.fSize13 {
+	font-size: 13px;
+}
+.fSize14 {
+	font-size: 14px;
+}
+
+.h2 {
+	height: 2mm;
+	min-height: 2mm;
+	max-height: 2mm;
+}
+
+.h5 {
+	height: calc(5.5mm + 0px);
+	min-height: calc(5.5mm + 0px);
+	max-height: calc(5.5mm + 0px);
+}
+
+.h8 {
+	height: 8mm;
+	min-height: 8mm;
+	max-height: 8mm;
+}
+
+.h9 {
+	height: 9mm;
+	min-height: 9mm;
+	max-height: 9mm;
+}
+
+.h99 {
+	height: 99mm;
+	min-height: 99mm;
+	max-height: 99mm;
+}
+
+.w4 {
+	width: 4mm;
+	min-width: 4mm;
+	max-width: 4mm;
+}
+.w5 {
+	width: 5mm;
+	min-width: 5mm;
+	max-width: 5mm;
+}
+.w5-5 {
+	width: 5.5mm;
+	min-width: 5.5mm;
+	max-width: 5.5mm;
+}
+.w6 {
+	width: 6mm;
+	min-width: 6mm;
+	max-width: 6mm;
+}
+.w7 {
+	width: 7mm;
+	min-width: 7mm;
+	max-width: 7mm;
+}
+.w8 {
+	width: 8mm;
+	min-width: 8mm;
+	max-width: 8mm;
+}
+.w10 {
+	width: 10mm;
+	min-width: 10mm;
+	max-width: 10mm;
+}
+.w11 {
+	width: 11mm;
+	min-width: 11mm;
+	max-width: 11mm;
+}
+.w12 {
+	width: 12mm;
+	min-width: 12mm;
+	max-width: 12mm;
+}
+.w14-2 {
+	width: 14.2mm;
+	min-width: 14.2mm;
+	max-width: 14.2mm;
+}
+.w16 {
+	width: 16mm;
+	min-width: 16mm;
+	max-width: 16mm;
+}
+.w16-5 {
+	width: 16.5mm;
+	min-width: 16.5mm;
+	max-width: 16.5mm;
+}
+.w17 {
+	width: 17mm;
+	min-width: 17mm;
+	max-width: 17mm;
+}
+.w18 {
+	width: 18mm;
+	min-width: 18mm;
+	max-width: 18mm;
+}
+.w19 {
+	width: 19mm;
+	min-width: 19mm;
+	max-width: 19mm;
+}
+.w20 {
+	width: 20mm;
+	min-width: 20mm;
+	max-width: 20mm;
+}
+.w21 {
+	width: 21mm;
+	min-width: 21mm;
+	max-width: 21mm;
+}
+.w23 {
+	width: 23mm;
+	min-width: 23mm;
+	max-width: 23mm;
+}
+.w23-1 {
+	width: 23.1mm;
+	min-width: 23.1mm;
+	max-width: 23.1mm;
+}
+.w24 {
+	width: 24mm;
+	min-width: 24mm;
+	max-width: 24mm;
+}
+.w25 {
+	width: 25mm;
+	min-width: 25mm;
+	max-width: 25mm;
+}
+.w26 {
+	width: 26mm;
+	min-width: 26mm;
+	max-width: 26mm;
+}
+.w27 {
+	width: 27mm;
+	min-width: 27mm;
+	max-width: 27mm;
+}
+.w28 {
+	width: 28mm;
+	min-width: 28mm;
+	max-width: 28mm;
+}
+.w30 {
+	width: 30mm;
+	min-width: 30mm;
+	max-width: 30mm;
+}
+.w31 {
+	width: 31mm;
+	min-width: 31mm;
+	max-width: 31mm;
+}
+.w32 {
+	width: 32mm;
+	min-width: 32mm;
+	max-width: 32mm;
+}
+.w33 {
+	width: 33mm;
+	min-width: 33mm;
+	max-width: 33mm;
+}
+.w37 {
+	width: 37mm;
+	min-width: 37mm;
+	max-width: 37mm;
+}
+.w37-9 {
+	width: 37.9mm;
+	min-width: 37.9mm;
+	max-width: 37.9mm;
+}
+.w39-4 {
+	width: 39.4mm;
+	min-width: 39.4mm;
+	max-width: 39.4mm;
+}
+.w40 {
+	width: 40mm;
+	min-width: 40mm;
+	max-width: 40mm;
+}
+.w42 {
+	width: 42mm;
+	min-width: 42mm;
+	max-width: 42mm;
+}
+.w50 {
+	width: 50mm;
+	min-width: 50mm;
+	max-width: 50mm;
+}
+.w52 {
+	width: 52mm;
+	min-width: 52mm;
+	max-width: 52mm;
+}
+.w55 {
+	width: 55mm;
+	min-width: 55mm;
+	max-width: 55mm;
+}
+.w56 {
+	width: 56mm;
+	min-width: 56mm;
+	max-width: 56mm;
+}
+.w58 {
+	width: 58mm;
+	min-width: 58mm;
+	max-width: 58mm;
+}
+.w63 {
+	width: 63mm;
+	min-width: 63mm;
+	max-width: 63mm;
+}
+.w67-8 {
+	width: 67.8mm;
+	min-width: 67.8mm;
+	max-width: 67.8mm;
+}
+.w68 {
+	width: 68mm;
+	min-width: 68mm;
+	max-width: 68mm;
+}
+.w82 {
+	width: 82mm;
+	min-width: 82mm;
+	max-width: 82mm;
+}
+.w82-2 {
+	width: 82.2mm;
+	min-width: 82.2mm;
+	max-width: 82.2mm;
+}
+.w119 {
+	width: 119mm;
+	min-width: 119mm;
+	max-width: 119mm;
+}
+
+.w225 {
+	width: 225mm;
+	min-width: 225mm;
+	max-width: 225mm;
+}
+
+.w991 {
+	width: 80mm;
+	min-width: 80mm;
+	max-width: 80mm;
+}
+
+.w992 {
+	width: 39mm;
+	min-width: 39mm;
+	max-width: 39mm;
+}
