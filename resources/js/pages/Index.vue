@@ -4,18 +4,18 @@
       <div class="tv">
         <div class="title">出荷日</div>
         <div class="value">
-          <input type="date" v-model="searchShipDateFrom" max="9999-12-31" ref="searchShipDateFrom" v-on:change="changeShipDate" @keyup.enter="moveToNextField('searchShipDateFrom')">
+          <input type="date" v-model="searchs.shipDateFrom" max="9999-12-31" ref="searchShipDateFrom" v-on:change="changeShipDate" @keyup.enter="moveToNextField('searchShipDateFrom')">
           ～
-          <input type="date" v-model="searchShipDateTo"   max="9999-12-31" ref="searchShipDateTo" v-on:change="changeShipDate" @keyup.enter="moveToNextField('searchShipDateTo')">
+          <input type="date" v-model="searchs.shipDateTo"   max="9999-12-31" ref="searchShipDateTo" v-on:change="changeShipDate" @keyup.enter="moveToNextField('searchShipDateTo')">
         </div>
       </div>
       <br />
       <div class="tv">
         <div class="title">進捗</div>
           <div class="value">
-          <div v-for="(searchStatusItem, index) in searchStatusList" :key="index" style="display:inline-block;">
+          <div v-for="(statusItem, index) in master.status" :key="index" style="display:inline-block;">
             <label>
-              <input type="checkbox" :value="searchStatusItem.status" :ref="'searchStatus_' + index" v-model="searchStatus" @keyup.enter="moveToNextField('searchStatus_' + index)">{{ searchStatusItem.label }}({{ searchStatusItem.count }})
+              <input type="checkbox" :value="statusItem.status" :ref="'searchStatus_' + index" v-model="searchs.status" @keyup.enter="moveToNextField('searchStatus_' + index)">{{ statusItem.label }}({{ statusItem.count }})
             </label>
           </div>
           ※()内の数値は件数
@@ -25,10 +25,10 @@
       <div class="tv">
         <div class="title">受注NO</div>
         <div class="value" >
-          <input type="text" autocomplete="off" id="orderNo" ref="orderNo" v-model="searchOrderNos" list="orderNoList" class="w100" @keyup.enter="moveToNextField('orderNo')">
+          <input type="text" autocomplete="off" id="orderNo" ref="orderNo" v-model="searchs.orderNo" list="orderNoList" class="w100" @keyup.enter="moveToNextField('orderNo')">
           <datalist id="orderNoList">
-            <option v-for="searchOrderNos in orderNoList" :key="searchOrderNos.ORDER_NO" :value="searchOrderNos.ORDER_NO">
-              {{ searchOrderNos.ORDER_NO }}
+            <option v-for="orderNo in master.orderNo" :key="orderNo.ORDER_NO" :value="orderNo.ORDER_NO">
+              {{ orderNo.ORDER_NO }}
             </option>
           </datalist>
         </div>
@@ -38,10 +38,10 @@
       <div class="tv">
         <div class="title">運送便</div>
         <div class="value">
-          <select ref="flights" v-model="searchFlights" class="w250" @keyup.enter="moveToNextField('flights')">
+          <select ref="flights" v-model="searchs.flights" class="w250" @keyup.enter="moveToNextField('flights')">
             <option value="">選択なし</option>
-            <option v-for="searchFlights in searchFlightsList" :key="searchFlights.DRIVER_CODE+':'+searchFlights.FLIGHTS" :value="searchFlights.DRIVER_CODE+':' + searchFlights.FLIGHTS">
-              {{ searchFlights.DRIVER_CODE }} : {{ searchFlights.DRIVER_NAME }} : {{ searchFlights.FLIGHTS }}
+            <option v-for="driver in master.drivers" :key="driver.DRIVER_CODE+':'+driver.FLIGHTS" :value="driver.DRIVER_CODE+':' + driver.FLIGHTS">
+              {{ driver.DRIVER_CODE }} : {{ driver.DRIVER_NAME }} : {{ driver.FLIGHTS }}
             </option>
           </select>
         </div>
@@ -145,8 +145,8 @@
           <th class="w90">入力確定</th>
           <th class="w90">出荷実績日</th>
         </tr>
-  
-        <tr v-for="(sihRecord, index) of pageResults" :key="sihRecord.SIH_ID" v-bind:class="{ 'hasKARI': hasKARI(sihRecord.KARI) }">
+  <!-- sihRecords pageResults-->
+        <tr v-for="(sihRecord, index) of pageResults" :key="index" v-bind:class="{ 'hasKARI': hasKARI(sihRecord.KARI) }">
           <!-- 受注No -->
           <td class="center" style="height: 46px;text-decoration: underline;color: #0000ff;">
             <div title="編集画面へ" style="cursor:pointer;" v-on:click="detail(sihRecord.SIH_ID)">{{ sihRecord.ORDER_NO }}</div>
@@ -173,9 +173,10 @@
           </td>
           <!-- 運転手 -->
           <td v-bind:class="{nothing: sihRecord.DRIVER_CODE=='' || sihRecord.DRIVER_CODE==null}">
-            <input type="text" autocomplete="off" :ref="'driver_' + index" size="4" v-model="sihRecord.DRIVER_CODE" v-on:blur="setDriverIndex(sihRecord.SIH_ID);driverBlur();" @keyup.enter="moveToNextField('driver_' + index)">
-            <font-awesome-icon icon="times" v-on:click="sihRecord.DRIVER_CODE='';setDriverIndex(sihRecord.SIH_ID);driverBlur();" style="cursor:pointer;" />
-            <font-awesome-icon icon="search" style="cursor:pointer;" v-on:click="setDriverIndex(sihRecord.SIH_ID);opneDialog('DriverSearch')" />
+            <input type="text" autocomplete="off" size="4" :value="sihRecord.DRIVER_CODE | upperCase" @input.lazy="sihRecord.DRIVER_CODE = ($event.target.value).toUpperCase()" v-on:keyup="driverC2N(index)" v-on:blur="driverBlur(index);" :ref="'driver_' + index" @keyup.enter="moveToNextField('driver_' + index)">
+       <!-- <input type="text" autocomplete="off" size="16" list="items_rel" :value="sidRecord.ITEM_CODE | upperCase" @input.lazy="sidRecord.ITEM_CODE = ($event.target.value).toUpperCase()" v-on:keyup="itemC2N(index)" v-on:blur="itemBlur(index);" :ref="'itemCode_' + index" @keyup.enter="moveToNextField('itemCode_' + index)"> -->
+            <font-awesome-icon icon="times" v-on:click="sihRecord.DRIVER_CODE='';driverBlur(index);" style="cursor:pointer;" />
+            <font-awesome-icon icon="search" style="cursor:pointer;" v-on:click="showDialog.DriverSearchIndex=index;opneDialog('DriverSearch')" />
             <br />
             {{ sihRecord.DRIVER_NAME }}
           </td>
@@ -232,8 +233,6 @@
   
     <!-- 新規登録 -->
     <InputShippingDialog  v-if="showDialog.InputShipping" :mode="'new'" :hCode="1" @close="closeDialog('InputShipping')" @complete="detail" ></InputShippingDialog>
-    <!-- 倉庫 -->
-    <WarehouseSearchDialog  v-if="showDialog.WarehouseSearch"                         @close="closeDialog('WarehouseSearch')" @select="selectWarehouseDialog" ></WarehouseSearchDialog>
     <!-- 運転手 -->
     <DriverSearchDialog   v-if="showDialog.DriverSearch"  :officeCode="this.officeCode" :hCode="this.hCode" @close="closeDialog('DriverSearch')" @select="selectDriverDialog"></DriverSearchDialog>
   </div>
@@ -252,21 +251,20 @@ export default {
 
       // ダイアログ表示フラグ
       showDialog: {
-      "InputShipping": false,
-      "WarehouseSearch": false,         // 倉庫検索ダイアログの表示・非表示管理フラグ
-      "DriverSearch": false,          // 運転手検索ダイアログの表示・非表示管理フラグ
-      "DriverSearchIndex": -1,
+        "InputShipping": false,
+        "DriverSearch": false,          // 運転手検索ダイアログの表示・非表示管理フラグ
+        "DriverSearchIndex": -1,
       },
 
       // 検索条件
-      searchWarehouses:"",
-      searchShipDateFrom: "",
-      searchShipDateTo: "",
-      searchStatus: [],
-      searchStatusList: [],
-      searchOrderNos: "",
-      searchFlights: "",
-      searchFlightsList: [],
+      searchs: {
+        'warehouses': "",
+        'shipDateFrom': "",
+        'shipDateTo': "",
+        'status': [],
+        'orderNo': "",
+        'flights': "",
+      },
 
       // 検索結果とソート
       sihRecords: [],
@@ -274,13 +272,17 @@ export default {
       sortOrder:"desc",
       isNotSureShipping: false,
 
-      //ドロップダウン元ネタ
-      mstWarehouses: [],
-      mstDrivers:[],
-      orderNoList: [],
+      // ドロップダウン元ネタ
+      master: {
+        'status': [],
+        'drivers': [],
+        'orderNo': [],
+      },
 
-      //倉庫名格納
-      warehouseName:"",
+      //一時保存値
+      origin: {
+        'DriverCode': [],
+      },
 
       //運送未確定数
       sureShippingCount:0,
@@ -291,8 +293,8 @@ export default {
       // 営業所コード
       officeCode:"",
 
-      // 検索用会社コード
-      companyCodeSearch: "",
+      // // 検索用会社コード
+      // companyCodeSearch: "",
 
       //
       hCode:"",
@@ -303,6 +305,7 @@ export default {
       // ページング
       pageCount: 0,
       pageNow: 1,
+      pageOld: 0,
       pageDataCount: 10,
       isShowPageFirst: false, isShowPageFirstDot: false,
       isShowPageLast: false,  isShowPageLastDot : false,
@@ -324,72 +327,79 @@ export default {
       this.setInert(false);
       this.showDialog[dialog] = false;
     },
-
     //-------------------------------------------------------------------------
-    // 倉庫関連
+    // ダイアログで選択した値を反映
     //-------------------------------------------------------------------------
-
-    // 倉庫ダイアログで選択した得意先を格納してダイアログを閉じる
-    selectWarehouseDialog: function(warehouseCode) {
-      this.searchWarehouses = warehouseCode;
-      this.closeDialog('WarehouseSearch');
-      this.warehouseC2N();
+    // 運転手ダイアログで選択した得意先を格納してダイアログを閉じる
+    selectDriverDialog: function(driverCode, truckerCode, companyCode) {
+      var index = this.showDialog.DriverSearchIndex;
+      this.sihRecords[index].TRUCKER_CODE = truckerCode;
+      this.sihRecords[index].DRIVER_CODE = driverCode;
+      this.closeDialog('DriverSearch');
+      this.driverBlur(index);
+      this.driverC2N(index);
+      this.$nextTick(() => this.moveToNextField('driver_' + this.showDialog.DriverSearchIndex));
     },
 
-    //倉庫名称の検索
-    warehouseC2N: function (){ 
-      var that = this;
-      var targetWarehouses = this.mstWarehouses.filter(function(row){ return row.CODE==that.searchWarehouses?true:false; });
-      if (targetWarehouses.length > 0) {
-        this.warehouseName = targetWarehouses[0].NAME;
-      } else {
-        this.warehouseName = "";
-      }
+    //-------------------------------------------------------------------------
+    // マスタ検索
+    //-------------------------------------------------------------------------
+    // 運送会社
+    getTruckerName: async function (truckerCode, companyCode){
+      var result = "";
+      await axios.post("/api/master/getTruckerName", { 'code': truckerCode, 'companyCode': companyCode }).then(response => { result = response.data; });
+      return result;
+    },
+    // 運転手
+    getDriverName: async function (driverCode, truckerCode, companyCode){
+      var result = "";
+      await axios.post("/api/master/getDriverName", { 'code': driverCode, 'truckerCode': truckerCode, 'companyCode': companyCode }).then(response => { result = response.data; });
+      return result;
+    },
+    // 特殊処理、運転手コードから運送会社コードを取得
+    getDriverTrucker: async function (driverCode, truckerCode, companyCode){
+      var result = "";
+      await axios.post("/api/master/getDriverTrucker", { 'code': driverCode, 'truckerCode': truckerCode, 'companyCode': companyCode }).then(response => { result = response.data; });
+      return result;
     },
 
     //-------------------------------------------------------------------------
     // 運転手関連
     //-------------------------------------------------------------------------
-
-    // 選択中の行番号を退避
-    setDriverIndex: function(sihId) {
-      var index = this.sihRecords.findIndex(({SIH_ID}) => SIH_ID === sihId);
-      if (index == -1){ return; }
-      this.showDialog.DriverSearchIndex = index;
-      this.hCode = this.sihRecords[index].HCODE
-      this.companyCodeSearch = this.officeCode
-    },
-
-    // 運転手ダイアログで選択した得意先を格納してダイアログを閉じる
-    // 
-    selectDriverDialog: function(companyCode, driverCode) {
-      // 格納
-      this.companyCodeSearch = companyCode;
-      this.sihRecords[this.showDialog.DriverSearchIndex].DRIVER_CODE = driverCode;
-      this.closeDialog('DriverSearch');
-      this.driverBlur();
-      this.$nextTick(() => this.moveToNextField('driver_' + this.showDialog.DriverSearchIndex));
-    },
-
-    driverBlur: function() {
-
-      var index = this.showDialog.DriverSearchIndex;
-
-      var companyCode = this.companyCodeSearch
-      var driverCode = this.sihRecords[index].DRIVER_CODE
-
-      var targetDrivers = this.mstDrivers.filter(function(row) { 
-        return (row.COMPANY_CODE==companyCode && row.CODE==driverCode)?true:false; 
-      });
-      if (targetDrivers.length > 0) {
-        this.sihRecords[index].DRIVER_NAME  = targetDrivers[0].NAME;
-        this.sihRecords[index].TRUCKER_CODE = targetDrivers[0].TRUCKER_CODE;
-        this.sihRecords[index].TRUCKER_NAME = targetDrivers[0].TRUCKER_NAME;
-      } else {
-        this.sihRecords[index].DRIVER_NAME  = "";
+    // キー入力
+    driverC2N: async function (index){
+      // 桁数が一定以下を処理しない(DBへの通信回数を減らす)
+      if ((this.sihRecords[index].DRIVER_CODE??"").length < 6) { 
+        this.sihRecords[index].DRIVER_NAME = "";
         this.sihRecords[index].TRUCKER_CODE = "";
         this.sihRecords[index].TRUCKER_NAME = "";
+        return;
       }
+      // 変更がある場合のみ処理
+      if (this.origin.DriverCode[index] == this.sihRecords[index].DRIVER_CODE) return;
+      // 元値を新しい値に変更する
+      this.origin.DriverCode[index] = this.sihRecords[index].DRIVER_CODE;
+      // 名称取得
+      this.sihRecords[index].DRIVER_NAME = await this.getDriverName(this.sihRecords[index].DRIVER_CODE, this.sihRecords[index].TRUCKER_CODE, this.officeCode);
+      this.sihRecords[index].TRUCKER_CODE = await this.getDriverTrucker(this.sihRecords[index].DRIVER_CODE, this.sihRecords[index].TRUCKER_CODE, this.officeCode);
+      this.sihRecords[index].TRUCKER_NAME = await this.getTruckerName(this.sihRecords[index].TRUCKER_CODE, this.officeCode);
+    },
+    // フォーカスアウト
+    driverBlur: async function(index) {
+      // 営業所コードがない場合は付け足す
+      if (1 <= (this.sihRecords[index].DRIVER_CODE??"").length && (this.sihRecords[index].DRIVER_CODE??"").length <= 6){
+        this.sihRecords[index].DRIVER_CODE = this.sihRecords[index].DRIVER_CODE.padStart(6, '0');
+      }
+      // 変更がある場合のみ処理
+      if (this.origin.DriverCode[index] == this.sihRecords[index].DRIVER_CODE) return;
+      // 元値を新しい値に変更する
+      this.origin.DriverCode[index] = this.sihRecords[index].DRIVER_CODE;
+      // 名称取得
+      this.sihRecords[index].DRIVER_NAME = await this.getDriverName(this.sihRecords[index].DRIVER_CODE, this.sihRecords[index].TRUCKER_CODE, this.officeCode);
+      this.sihRecords[index].TRUCKER_CODE = await this.getDriverTrucker(this.sihRecords[index].DRIVER_CODE, this.sihRecords[index].TRUCKER_CODE, this.officeCode);
+      this.sihRecords[index].TRUCKER_NAME = await this.getTruckerName(this.sihRecords[index].TRUCKER_CODE, this.officeCode);
+      // 
+      this.driverC2N(index);
     },
 
     //-------------------------------------------------------------------------
@@ -398,12 +408,12 @@ export default {
     search: async function(){
       this.isNotSureShipping = false;
       await axios.post("/api/shippingSearch", {
-        'searchWarehouses'  : this.searchWarehouses,
-        'searchShipDateFrom'  : this.searchShipDateFrom,
-        'searchShipDateTo'  : this.searchShipDateTo,
-        'searchStatus'    : this.searchStatus,
-        'searchOrderNos'    : this.searchOrderNos,
-        'searchFlights'     : this.searchFlights,
+        'searchWarehouses'    : this.searchs.warehouses,
+        'searchShipDateFrom'  : this.searchs.shipDateFrom,
+        'searchShipDateTo'    : this.searchs.shipDateTo,
+        'searchStatus'        : this.searchs.status,
+        'searchOrderNos'      : this.searchs.orderNo,
+        'searchFlights'       : this.searchs.flights,
       })
       .then(response => {
 
@@ -445,12 +455,12 @@ export default {
     //-------------------------------------------------------------------------
     regist: function(){
       this.$store.commit("setSearch" , {
-        "searchWarehouses"   : this.searchWarehouses
-        ,"searchShipDateFrom" : this.searchShipDateFrom
-        ,"searchShipDateTo"   : this.searchShipDateTo
-        ,"searchStatus"     : this.searchStatus
-        ,"searchOrderNos"   : this.searchOrderNos
-        ,"searchFlights"    : this.searchFlights
+        'searchWarehouses'    : this.searchs.warehouses,
+        'searchShipDateFrom'  : this.searchs.shipDateFrom,
+        'searchShipDateTo'    : this.searchs.shipDateTo,
+        'searchStatus'        : this.searchs.status,
+        'searchOrderNos'      : this.searchs.orderNo,
+        'searchFlights'       : this.searchs.flights,
       });
       this.opneDialog("InputShipping");
     },
@@ -459,12 +469,12 @@ export default {
     //-------------------------------------------------------------------------
     detail: function(sihId, orderNo, hCode, shipDate, userCode){
       this.$store.commit("setSearch" , {
-        "searchWarehouses"   : this.searchWarehouses
-        ,"searchShipDateFrom" : this.searchShipDateFrom
-        ,"searchShipDateTo"   : this.searchShipDateTo
-        ,"searchStatus"     : this.searchStatus
-        ,"searchOrderNos"   : this.searchOrderNos
-        ,"searchFlights"    : this.searchFlights
+        'searchWarehouses'    : this.searchs.warehouses,
+        'searchShipDateFrom'  : this.searchs.shipDateFrom,
+        'searchShipDateTo'    : this.searchs.shipDateTo,
+        'searchStatus'        : this.searchs.status,
+        'searchOrderNos'      : this.searchs.orderNo,
+        'searchFlights'       : this.searchs.flights,
       });
 
       if (orderNo !== undefined && hCode !== undefined && shipDate !== undefined && userCode !== undefined) {
@@ -480,21 +490,22 @@ export default {
     //-------------------------------------------------------------------------
     changeShipDate: async function() {
       await axios.post("/api/shippingSearchDateInfo", {
-        "shipDateFrom"  : this.searchShipDateFrom,
-        "shipDateTo"  : this.searchShipDateTo,
+        "shipDateFrom"  : this.searchs.shipDateFrom,
+        "shipDateTo"  : this.searchs.shipDateTo,
       })
       .then(response => {
       
         // 進捗のカッコ内の件数
-        this.searchStatusList = response.data.searchStatusList;
+        this.master.status = response.data.searchStatusList;
+        this.searchs.status = [];
 
         // 運送便
-        this.searchFlightsList = response.data.flightsList;
-        this.searchFlights = "";
+        this.master.drivers = response.data.flightsList;
+        this.searchs.flights = "";
 
         //受付NO
-        this.orderNoList = response.data.orderNoList;
-        this.searchOrderNos = "";
+        this.master.orderNo  = response.data.orderNoList;
+        this.searchs.orderNo = "";
       });
     },
     //-------------------------------------------------------------------------
@@ -570,8 +581,8 @@ export default {
       this.nextFields.push({ 'id':'searchShipDateFrom', 'disabled': false, });
       this.nextFields.push({ 'id':'searchShipDateTo', 'disabled': false, });
 
-      for (var i = 0; i < this.searchStatusList.length; i++) {
-        this.nextFields.push({ 'id':'searchStatus_' + i,	'disabled': (this.searchStatusList.length == 0), });
+      for (var i = 0; i < this.master.status.length; i++) {
+        this.nextFields.push({ 'id':'searchStatus_' + i,	'disabled': (this.master.status.length == 0), });
       }
 
       this.nextFields.push({ 'id':'orderNo', 'disabled': false, });
@@ -617,46 +628,31 @@ export default {
 
     await axios.get("/api/shippingSearchInit", {})
       .then(response => {
-        this.searchShipDateFrom   = response.data.searchShipDateFrom;
-        this.searchShipDateTo   = response.data.searchShipDateTo;
-        this.searchStatus     = response.data.searchStatus;
-        this.searchStatusList   = response.data.searchStatusList;
-        this.searchOrderNos     = response.data.searchOrderNos;
-        this.searchFlights    = response.data.searchFlights;
-        this.searchFlightsList  = response.data.searchFlightsList;
-        this.screenRedrawInterval = response.data.screenRedrawInterval;
-        this.officeCode       = response.data.officeCode;
-        this.companyCodeSearch 		= response.data.officeCode;
+        this.searchs.shipDateFrom   = response.data.searchShipDateFrom;
+        this.searchs.shipDateTo     = response.data.searchShipDateTo;
+        this.searchs.status         = response.data.searchStatus;
+        this.searchs.orderNo        = response.data.searchOrderNos;
+        this.searchs.flights        = response.data.searchFlights;
+        this.screenRedrawInterval   = response.data.screenRedrawInterval;
+        this.officeCode             = response.data.officeCode;
+        // this.companyCodeSearch 		  = response.data.officeCode;
       });
 
     // 戻りの場合はVuexから前回の検索結果を取得する
     var isBack = this.$route.query.isBack;
     if (isBack == "true"){
-      if (store.state.searchWarehouses != null && store.state.searchWarehouses != undefined){ this.searchWarehouses = store.state.searchWarehouses; }
-      if (store.state.searchShipDateFrom != null && store.state.searchShipDateFrom != undefined){ this.searchShipDateFrom = store.state.searchShipDateFrom; }
-      if (store.state.searchShipDateTo != null && store.state.searchShipDateTo != undefined){ this.searchShipDateTo = store.state.searchShipDateTo; }
-      if (store.state.searchStatus != null && store.state.searchStatus != undefined)  { this.searchStatus = store.state.searchStatus;   }
-      if (store.state.searchOrderNos != null && store.state.searchOrderNos != undefined){ this.searchOrderNos = store.state.searchOrderNos; }
+      if (store.state.searchWarehouses != null && store.state.searchWarehouses != undefined){ this.searchs.warehouses = store.state.searchWarehouses; }
+      if (store.state.searchShipDateFrom != null && store.state.searchShipDateFrom != undefined){ this.searchs.shipDateFrom = store.state.searchShipDateFrom; }
+      if (store.state.searchShipDateTo != null && store.state.searchShipDateTo != undefined){ this.searchs.shipDateTo = store.state.searchShipDateTo; }
+      if (store.state.searchStatus != null && store.state.searchStatus != undefined)  { this.searchs.status = store.state.searchStatus;   }
+      if (store.state.searchOrderNos != null && store.state.searchOrderNos != undefined){ this.searchs.orderNo = store.state.searchOrderNos; }
     }
 
     // 日付ドライバー検索
     await this.changeShipDate();
 
-    // Warehouses
-    await axios.post("/api/master/warehouses", {})
-      .then(response => { 
-        this.mstWarehouses = response.data; 
-        this.warehouseC2N();
-      })
-
-    // Drivers
-    await axios.post("/api/master/drivers", {})
-    .then(response => { 
-      this.mstDrivers = response.data; 
-    })
-
     if (isBack == "true"){
-      if (store.state.searchFlights != null && store.state.searchFlights != undefined)  { this.searchFlights = store.state.searchFlights;   }
+      if (store.state.searchFlights != null && store.state.searchFlights != undefined)  { this.searchs.flights = store.state.searchFlights;   }
     }
 
     // 初回検索
@@ -679,10 +675,10 @@ export default {
   
   computed: {
     pageResults() {
-      var startIndex    = (this.pageNow - 1) *  this.pageDataCount;
+      var startIndex  = (this.pageNow - 1) * this.pageDataCount;
       var endIndex    = startIndex + this.pageDataCount;
-      var that      = this;
-      return this.sihRecords.sort(function(a, b){
+      var that        = this;
+      var result = this.sihRecords.sort(function(a, b){
         if (that.sortOrder == "asc"){
           if (a[that.sortKey] <  b[that.sortKey]) return -1;
           if (a[that.sortKey] >= b[that.sortKey]) return 1;
@@ -692,6 +688,16 @@ export default {
           if (a[that.sortKey] >= b[that.sortKey]) return -1;
         }
       }).slice(startIndex,endIndex);
+
+      if (this.pageOld != this.pageNow) {
+        this.origin.DriverCode = [];
+        for(var i = 0; i < result.length; i++) {
+          this.origin.DriverCode.push(result[i].DRIVER_CODE);
+          this.pageOld = this.pageNow
+        }
+      }
+
+      return result;
     },
     pagingCount() {
       // 全ページが20ページ以内の場合はページングの間引きはしない
@@ -741,6 +747,26 @@ export default {
       }
       return result;
     }
+  },
+  filters:{
+    decimalFormat:function(value) {
+      if (!value) return ''
+      if(value == 0) return ''
+      return Number(value).toFixed(1);
+    },
+    decimalFormatZero:function(value) {
+      if (!value) return 0
+      if (value == '' || value == null) return 0
+      return Number(value).toFixed(0);
+    },
+    upperCase:function(value) {
+      if (!value) return ''
+      return value.toUpperCase();
+    },
+    comma:function(value){
+      if (!value) return ''
+      return value.toString().replace( /(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
+    },
   },
 };
 </script>

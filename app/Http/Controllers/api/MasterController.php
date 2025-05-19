@@ -61,7 +61,8 @@ class MasterController extends Controller
 	// 
 	//-------------------------------------------------------------------------
 	public function getUsers(Request $request){
-		return users::whereNotNull('CODE')->orderBy('CODE')->get();
+		// return users::whereNotNull('CODE')->orderBy('CODE')->get();
+		return users::whereNotNull('CODE')->orderBy('CODE')->select('CODE', 'NAME')->get();
 	}
 
 	//-------------------------------------------------------------------------
@@ -161,7 +162,8 @@ class MasterController extends Controller
 
 		// 検索結果
 		// $customers = ProjectCommon::getRelation('\App\Models\customers', $query)->get();
-		$customers = $query->get();
+		// $customers = $query->get();
+		$customers = $query->select('CODE', 'NAME', 'NAME1')->get();
 
 		// 返却
 		return $customers;
@@ -217,7 +219,7 @@ class MasterController extends Controller
 
 		// 検索結果
 		// $deliveries = ProjectCommon::getRelation('\App\Models\deliveries', $query)->get();
-		$deliveries = $query->get();
+		$deliveries = $query->select('CUSTOMER_CODE','CODE','NAME','NAME2')->get();
 
 		// 返却
 		return $deliveries;
@@ -268,7 +270,7 @@ class MasterController extends Controller
 
 		// 検索結果
 		// $customers = ProjectCommon::getRelation('\App\Models\suppliers', $query)->get();
-		$suppliers = $query->get();
+		$suppliers = $query->select('CODE','NAME','NAME1')->get();
 
 		// 返却
 		return $suppliers;
@@ -316,7 +318,7 @@ class MasterController extends Controller
 
 		// 検索結果
 		// $customers = ProjectCommon::getRelation('\App\Models\warehouses', $query)->get();
-		$warehouses = $query->get();
+		$warehouses = $query->select('CODE','NAME','NAME1')->get();
 
 		// 返却
 		return $warehouses;
@@ -388,7 +390,7 @@ class MasterController extends Controller
 
 		// 検索結果
 		// $customers = ProjectCommon::getRelation('\App\Models\drivers', $query)->get();
-		$drivers = $query->get();
+		$drivers = $query->select('CODE', 'NAME', 'TRUCKER_CODE', 'TRUCKER_NAME', 'COMPANY_CODE')->get();
 
 		// 返却
 		return $drivers;
@@ -718,31 +720,16 @@ class MasterController extends Controller
 	}
 
 	public function getDetail(Request $request){
-
 		$user = $this->getUsers($request);
-		$customers = $this->getCustomers($request);
-		$deliveries = $this->getDeliveries($request);
-		$suppliers = $this->getSuppliers($request);
-		$warehouses = $this->getWarehouses($request);
-		$drivers = $this->getDrivers($request);
 		$hcodesD = $this->getHCodesD($request);
 		$places = $this->getPlaces($request);
 		$remarks = $this->getRemarks($request);
-		$offices = $this->getOffices($request);
-
 		$result = array(
 			"users"         => $user,
-			"customers"     => $customers,
-			"deliveries"    => $deliveries,
-			"suppliers"     => $suppliers,
-			"warehouses"    => $warehouses,
-			"drivers"       => $drivers,
 			"hcodesD"       => $hcodesD,
 			"places"        => $places,
 			"remarks"       => $remarks,
-			"offices"       => $offices,
 		);
-
 		return $result;
 	}
 }

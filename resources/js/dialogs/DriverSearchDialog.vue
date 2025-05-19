@@ -54,7 +54,7 @@
               <th class="left">運送会社名</th>
             </tr>
             <tr v-for="(result, index) in results" :key="index">
-              <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.COMPANY_CODE, result.CODE)">{{ result.CODE }}</div></td>
+              <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.CODE, result.TRUCKER_CODE, result.COMPANY_CODE)">{{ result.CODE }}</div></td>
               <td>{{ result.NAME }}</td>
               <td>{{ result.TRUCKER_CODE }}</td>
               <td>{{ result.TRUCKER_NAME }}</td>
@@ -71,7 +71,7 @@ export default {
   props: {
     officeCode : String,
     officeOtherCode : String,
-    hCode : Number,
+    hCode : String,
   },
   data() {
     return {
@@ -113,8 +113,8 @@ export default {
     //---------------------------------------------------------------------
     // 選択
     //---------------------------------------------------------------------
-    select: function(companyCode, driverCode){
-      this.$emit("select",companyCode, driverCode);
+    select: function(driverCode, truckerCode, companyCode){
+      this.$emit("select", driverCode, truckerCode, companyCode);
     },
 
     //---------------------------------------------------------------------

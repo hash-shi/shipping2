@@ -40,7 +40,8 @@ axios.interceptors.request.use((config) =>{
   if (config.url.indexOf("/api/itemsCustomer/") == 0){ isWaitView = false; }
   if (config.url.indexOf("/api/itemsDelivery/") == 0){ isWaitView = false; }
   if (config.url.indexOf("/api/itemsTransfer/") == 0){ isWaitView = false; }
-
+  if (config.url.indexOf("/api/master/") == 0){ isWaitView = false; }
+  
   // タイムアウト値を設定
   config.timeout = 360000
 

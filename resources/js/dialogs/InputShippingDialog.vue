@@ -24,7 +24,7 @@
           <div class="tv" v-if="mode=='new'">
             <div class="title">取区</div>
             <div class="value" >
-              <label v-for="(hcodeH, index) of this.HCODESH">
+              <label v-for="(hcodeH, index) of this.HCODESH" :key="index">
                 <br v-if="index!=0 && (index % 3)==0" />
                 <input type="radio" :id="'hcodeH_'+index" name="r2" :value="hcodeH.CODE" v-model="HCODE" :ref="'inputShipping_hcodeH_' + index" @keyup.enter="moveToNextField('inputShipping_hcodeH_' + index)">{{ hcodeH.NAME }}
               </label>

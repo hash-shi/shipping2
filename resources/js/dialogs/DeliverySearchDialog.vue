@@ -42,7 +42,7 @@
               <th class="left">名称</th>
               <th class="left">カナ</th>
             </tr>
-            <tr v-for="result in results" :key="result.CODE">
+            <tr v-for="result in results" :key="(result.CUSTOMER_CODE + '-' + result.CODE)">
               <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.CODE)">{{ result.CODE }}</div></td>
               <td>{{ result.NAME }}</td>
               <td>{{ result.NAME2 }}</td>
@@ -143,7 +143,7 @@ export default {
   mounted: async function(){
 
     // 営業所コード
-    this.searchOfficeCode = this.officeCode;
+    this.searchs.officeCode = this.officeCode;
     // 通常の場合は営業所で絞り込み
     // 融通の場合は逆絞り込み
     if (this.hCode == 1 || this.hCode == 2 || this.hCode == 3) {
