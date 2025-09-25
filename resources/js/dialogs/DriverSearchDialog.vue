@@ -46,20 +46,27 @@
               <button style="width:100px;height: 32px;" v-on:click="search" :ref="'driver_search'" @keyup.enter="search">検索</button>
             </div>
           </div>
-          <table class="searchResult">
-            <tr>
-              <th class="w100 left">コード</th>
-              <th class="left">名称</th>
-              <th class="left">運送会社コード</th>
-              <th class="left">運送会社名</th>
-            </tr>
-            <tr v-for="(result, index) in results" :key="index">
-              <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.CODE, result.TRUCKER_CODE, result.COMPANY_CODE)">{{ result.CODE }}</div></td>
-              <td>{{ result.NAME }}</td>
-              <td>{{ result.TRUCKER_CODE }}</td>
-              <td>{{ result.TRUCKER_NAME }}</td>
-            </tr>
-          </table>
+
+          <div class="searchResult">
+            <table class="searchRecord">
+              <thead>
+                <tr>
+                  <th class="w100 left">コード</th>
+                  <th class="left">名称</th>
+                  <th class="left">運送会社コード</th>
+                  <th class="left">運送会社名</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(result, index) in results" :key="index">
+                  <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.CODE, result.TRUCKER_CODE, result.COMPANY_CODE)">{{ result.CODE }}</div></td>
+                  <td>{{ result.NAME }}</td>
+                  <td>{{ result.TRUCKER_CODE }}</td>
+                  <td>{{ result.TRUCKER_NAME }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
         </div>
       </div>
@@ -180,4 +187,7 @@ export default {
 }
 </script>
 <style scoped>
+  .searchResult {
+    height: 300px;
+  }
 </style>

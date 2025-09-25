@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use App\Libs\DBUtility;
 use App\Libs\Masters;
+use App\Http\Controllers\api\CommonController;
 use App\Http\Controllers\api\MasterController;
 use App\Models\configures;
 use App\Models\deliveries;
@@ -29,7 +30,7 @@ class ShippingController extends Controller
 	// 
 	// 
 	//-------------------------------------------------------------------------
-	public function searchInit(Request $request){
+	public function init(Request $request){
 
 		//---------------------------------------------------------------------
 		// 画面のリフレッシュ間隔の取得
@@ -50,7 +51,7 @@ class ShippingController extends Controller
 		//---------------------------------------------------------------------
 		// 出荷日(From 一ヵ月前の一日、現在日付)
 		//---------------------------------------------------------------------
-		$searchShipDateFrom = date("Y-m-d",strtotime("first day of -24 month"));
+		$searchShipDateFrom = date("Y-m-d", strtotime("first day of -36 month"));
 		// $searchShipDateFrom = date("Y-m-d");
 		$searchShipDateTo   = date("Y-m-d");
 
@@ -95,7 +96,7 @@ class ShippingController extends Controller
 	// 
 	// 
 	//-------------------------------------------------------------------------
-	public function searchDateInfo(Request $request){
+	public function shipDate(Request $request){
 
 		$shipDateFrom       = $request->input("shipDateFrom");
 		$shipDateTo         = $request->input("shipDateTo");
@@ -236,6 +237,8 @@ class ShippingController extends Controller
 		$searchStatus       = $request->input("searchStatus");
 		$searchOrderNos     = $request->input("searchOrderNos");
 		$searchFlights      = $request->input("searchFlights");
+		$searchCustomerCode = $request->input("searchCustomerCode");
+		
 
 		// 検索条件の組み立て
 		$querySih = sih::query();
@@ -283,6 +286,11 @@ class ShippingController extends Controller
 			$querySih->where('S.FLIGHTS', $flights);
 		}
 
+		// 得意先
+		if ($searchCustomerCode != null && $searchCustomerCode != ""){
+			$querySih->where('S.CUSTOMER_CODE', $searchCustomerCode);
+		}
+
 		// 並び順
 		$querySih->selectRaw('S.*');
 		$querySih->orderBy('SIH_ID', 'desc');
@@ -301,34 +309,7 @@ class ShippingController extends Controller
 		);
 		return $result;
 	}
-	
-	// //-------------------------------------------------------------------------
-	// // 得意先に紐づく納入先一覧の取得
-	// // 
-	// // 
-	// //-------------------------------------------------------------------------
-	// public function getDeliveries(Request $request){
 
-	// 	//得意先コードを取得する
-	// 	$customerCode = $request->input("code");
-
-	// 	// 検索条件の組み立て
-	// 	$query = deliveries::query();
-	// 	$query->where('ON_NOT_USE', 0);
-
-	// 	// 得意先がある場合は、得意先基準で取得する。
-	// 	if($customerCode != null && $customerCode !="") {
-	// 		$query->whereIn('CODE', itemsCustomer::select('DELIVERY_CODE')->where('CUSTOMER_CODE', $customerCode));
-	// 	}
-
-	// 	// 並び順
-	// 	$query->orderBy('CODE', 'asc');
-	// 	// 検索結果
-	// 	$deliveries = $query->get();
-	// 	// 返却
-	// 	return $deliveries;
-	// }
-	
 	//-------------------------------------------------------------------------
 	// 詳細レコードの取得
 	// 新規・修正・複写、共通
@@ -355,7 +336,7 @@ class ShippingController extends Controller
 		// 出荷指示明細
 		$sidRecords = array();
 		// 定数マスタ
-		$common = new MasterController;
+		$common = new CommonController;
 
 		$configures = $common->getConfig($request);
 		// dump($configures);
@@ -516,11 +497,14 @@ class ShippingController extends Controller
 	public function conf(Request $request){
 		return $this->regist($request, 1, 'conf');
 	}
-	public function inst(Request $request){
-		return $this->regist($request, 1, 'inst');
-	}
-	public function vouc(Request $request){
-		return $this->regist($request, 1, 'vouc');
+	// public function inst(Request $request){
+	// 	return $this->regist($request, 1, 'inst');
+	// }
+	// public function slip(Request $request){
+	// 	return $this->regist($request, 1, 'slip');
+	// }
+	public function update(Request $request){
+		return $this->regist($request, 1, 'conf');
 	}
 	public function comp(Request $request){
 		return $this->regist($request, 2, 'comp');
@@ -575,7 +559,7 @@ class ShippingController extends Controller
 			}
 
 			// 伝票印刷回数の更新
-			if ($isMethod == 'vouc') {
+			if ($isMethod == 'slip') {
 				$printCount2 = 0;
 				if ($sihRecord['PRINT2_COUNT'] != null) { $printCount2 = $sihRecord['PRINT2_COUNT']; }
 				$sihRecord['PRINT2_COUNT'] = (intval($printCount2) + 1);
@@ -602,7 +586,7 @@ class ShippingController extends Controller
 			if ($isNew) {
 
 				// IDと受注番号の取り直しを行う。
-				$common = new MasterController;
+				$common = new CommonController;
 				$sihId = $common->getId($request);
 
 				// 受注番号の取り直しと更新(+1する)
@@ -649,15 +633,26 @@ class ShippingController extends Controller
 
 	//-------------------------------------------------------------------------
 	// 出荷指示更新
-	// 検索画面からの更新、運転手・便区分のみ更新する。
+	// 指示書と伝票番号は印刷回数のみ更新する。
 	// 
 	//-------------------------------------------------------------------------
-	public function update(Request $request){
+	public function inst(Request $request){
+		return $this->registPrint($request, 1, 'inst');
+	}
+	public function slip(Request $request){
+		return $this->registPrint($request, 1, 'slip');
+	}
+	public function registPrint(Request $request, $isStatus, $isMethod){
 
 		//---------------------------------------------------------------------
 		// リクエスト取得
 		//---------------------------------------------------------------------
-		$sihRecords      = $request->input("sihRecords");
+		$isNew          = $request->input("isNew");
+		$sihRecord      = $request->input("sihRecord");
+		$sidRecords     = $request->input("sidRecords");
+
+		$sihId          = $sihRecord['SIH_ID'];
+		$orderNo        = $sihRecord['ORDER_NO'];
 
 		//---------------------------------------------------------------------
 		// トランザクション開始
@@ -666,17 +661,29 @@ class ShippingController extends Controller
 
 		try {
 
-			// 更新
-			// 現状では検索画面に表示しされている全件が更新される。変更判定フラグを持たせる予定。
-			foreach($sihRecords as $sihRecord) {
-				DB::table('SIH')->where('SIH_ID', $sihRecord['SIH_ID'])->update([
-					'DRIVER_CODE'    => $sihRecord['DRIVER_CODE'],
-					'DRIVER_NAME'    => $sihRecord['DRIVER_NAME'],
-					'TRUCKER_CODE'   => $sihRecord['TRUCKER_CODE'],
-					'TRUCKER_NAME'   => $sihRecord['TRUCKER_NAME'],
-					'FLIGHTS'        => $sihRecord['FLIGHTS'],
-				]);
+			// 指示書印刷回数の更新
+			if ($isMethod == 'inst') {
+				$printCount = 0;
+				if ($sihRecord['PRINT_COUNT'] != null) { $printCount = $sihRecord['PRINT_COUNT']; }
+				$sihRecord['PRINT_COUNT'] = (intval($printCount) + 1);
+				$sihRecord['PRINT_DATE'] = date('Y-m-d H:i:s');
 			}
+
+			// 伝票印刷回数の更新
+			if ($isMethod == 'slip') {
+				$printCount2 = 0;
+				if ($sihRecord['PRINT2_COUNT'] != null) { $printCount2 = $sihRecord['PRINT2_COUNT']; }
+				$sihRecord['PRINT2_COUNT'] = (intval($printCount2) + 1);
+				$sihRecord['PRINT2_DATE'] = date('Y-m-d H:i:s');
+			}
+
+			// 更新
+			DB::table('SIH')->where('SIH_ID', $sihId)->update([
+				'PRINT_COUNT'    => $sihRecord['PRINT_COUNT'],
+				'PRINT_DATE'     => $sihRecord['PRINT_DATE'],
+				'PRINT2_COUNT'   => $sihRecord['PRINT2_COUNT'],
+				'PRINT2_DATE'    => $sihRecord['PRINT2_DATE'],
+			]);
 
 			//---------------------------------------------------------------------
 			// トランザクションロールバック
@@ -690,6 +697,10 @@ class ShippingController extends Controller
 			DB::rollback();
 		}
 
+		return array(
+			"SIH_ID"   => $sihId,
+			"ORDER_NO" => $orderNo,
+		);
 	}
 
 	//-------------------------------------------------------------------------
@@ -709,22 +720,6 @@ class ShippingController extends Controller
 	// 
 	//-------------------------------------------------------------------------
 	public function instructionPrint(Request $request, $sihId){
-	
-		// // 印刷日付、印刷回数の更新
-		// $sihRecord = sih::where('SIH_ID', $sihId)->first();
-
-		// // 印刷回数の取得
-		// $printConut = 0;
-		// if ($sihRecord['PRINT_COUNT'] != null) {
-		// 	$printConut = $sihRecord['PRINT_COUNT'];
-		// }
-		// $printConut = (intval($printConut) + 1);
-
-		// // 更新
-		// sih::where('SIH_ID', $sihId)->update([
-		// 	'PRINT_DATE'    => date('Y-m-d H:i:s'),
-		// 	'PRINT_COUNT'   => $printConut,
-		// ]);
 
 		// ヘッダーの取得
 		$sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('SIH_ID', $sihId))->first());
@@ -751,7 +746,8 @@ class ShippingController extends Controller
 
 		// 置換実行
 		// $html_data = preg_replace('/_confirmCount_/',   $sihRecord['CONFIRM_COUNT'],    $html_data);
-		$html_data = preg_replace('/_printCount_/',   $sihRecord['PRINT_COUNT'],    $html_data);
+    $printCount = $sihRecord['CONFIRM_COUNT'] != null ? $sihRecord['CONFIRM_COUNT'] : 0;
+    $html_data = preg_replace('/_printCount_/',   	$printCount,                    $html_data);
 
 		$html_data = preg_replace('/_orderNo_/',        $sihRecord['ORDER_NO'],         $html_data);
 		$html_data = preg_replace('/_orderYear_/',      mb_substr($orderDate, 0, 4),    $html_data);
@@ -953,22 +949,6 @@ class ShippingController extends Controller
 	// 
 	//-------------------------------------------------------------------------
 	public  function slipPrint(Request $request, $sihId){
-		
-		// // 印刷日付、印刷回数の更新
-		// $sihRecord = sih::where('SIH_ID', $sihId)->first();
-
-		// // 印刷回数の取得
-		// $print2Conut = 0;
-		// if ($sihRecord['PRINT2_COUNT'] != null) {
-		// 	$print2Conut = $sihRecord['PRINT2_COUNT'];
-		// }
-		// $print2Conut = (intval($print2Conut) + 1);
-
-		// // 更新
-		// sih::where('SIH_ID', $sihId)->update([
-		// 	'PRINT2_DATE'    => date('Y-m-d H:i:s'),
-		// 	'PRINT2_COUNT'   => $print2Conut,
-		// ]);
 
 		// ヘッダーの取得
 		$sihRecord = sih::where('SIH_ID', $sihId)->first();
@@ -984,13 +964,15 @@ class ShippingController extends Controller
 
 		// 置換実行
 		$html_data = preg_replace('/_orderNo_/',        $sihRecord['ORDER_NO'],         $html_data); 
-		$html_data = preg_replace('/_companyName_/',    $sihRecord['COMPANY_NAME'],     $html_data);
+		// $html_data = preg_replace('/_companyName_/',    $sihRecord['COMPANY_NAME'],     $html_data);
+		$html_data = preg_replace('/_companyName_/',    $sihRecord['CUSTOMER_NAME'],    $html_data);
 		$html_data = preg_replace('/_deliverryName_/',  $sihRecord['DELIVERY_NAME'],    $html_data);
 		$html_data = preg_replace('/_shipYear_/',       mb_substr($shipDate,0,4),       $html_data);
 		$html_data = preg_replace('/_shipMonth_/',      mb_substr($shipDate,5,2),       $html_data);
 		$html_data = preg_replace('/_shipDay_/',        mb_substr($shipDate,8,2),       $html_data);
 		// $html_data = preg_replace('/_confirmCount_/',   $sihRecord['PRINT2_COUNT'],     $html_data);
-		$html_data = preg_replace('/_print2Conut_/',   $sihRecord['PRINT2_COUNT'],     $html_data);
+    $printCount2 = $sihRecord['CONFIRM_COUNT'] != null ? $sihRecord['CONFIRM_COUNT'] : 0;
+    $html_data = preg_replace('/_print2Count_/',    $printCount2,                   $html_data);
 		$html_data = preg_replace('/_deliveryYear_/',   mb_substr($deliveryDate,0,4),   $html_data);
 		$html_data = preg_replace('/_deliveryMonth_/',  mb_substr($deliveryDate,5,2),   $html_data);
 		$html_data = preg_replace('/_deliveryDay_/',    mb_substr($deliveryDate,8,2),   $html_data);
@@ -1023,4 +1005,25 @@ class ShippingController extends Controller
 		$pdf->addPage($html_data);
 		$pdf-> send();
 	}
+
+	//-------------------------------------------------------------------------
+	// 一覧の取得
+	// 
+	// 
+	//-------------------------------------------------------------------------
+	public function getDetail(Request $request){
+		$master = new MasterController;
+		$user = $master->getUsers($request);
+		$hcodesD = $master->getHCodesD($request);
+		$places = $master->getPlaces($request);
+		$remarks = $master->getRemarks($request);
+		$result = array(
+			"users"         => $user,
+			"hcodesD"       => $hcodesD,
+			"places"        => $places,
+			"remarks"       => $remarks,
+		);
+		return $result;
+	}
+
 }

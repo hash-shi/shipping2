@@ -28,30 +28,27 @@ class QrprintController extends Controller
     //---------------------------------------------------------------------
     // 画面初期表示
     //---------------------------------------------------------------------
-    public function qrPrintInit(Request $request){
+    public function init(Request $request){
 
-        //本日日付の取得
-        $printDate = date("Y-m-d");
-
-        //印刷枚数の取得
-        // $query = configures::query();
-        // $query->where('ID', 'QR_NUMBER');
-        // $numSheet = $query->value('VALUE');
         $numSheet = "";
 
+		$common = new CommonController;
+
+        //本日日付の取得
+        $printDate = $common->getToday($request);
+
+        // 定数マスタ
+        $configures = $common->getConfig($request);
+
         //営業所コード定数の取得
-        $query = configures::query();
-        $query->where('ID', 'OFFICE_CODE');
-        $officeCode = $query->value('VALUE');
+        $officeCode = $configures[array_search('OFFICE_CODE', array_column($configures, 'ID'))]['VALUE'];
 
         //画面更新間隔の取得
-        $query = configures::query();
-        $query->where('ID', 'SCREEN_REDRAW_INTERVAL');
-        $screenRedrawInterval = $query->value('VALUE');
+        $screenRedrawInterval = $configures[array_search('SCREEN_REDRAW_INTERVAL', array_column($configures, 'ID'))]['VALUE'];
 
         //連番の取得
         $lotSeq="";
-        $lotSeq = $this->getserialNumber($printDate);
+        $lotSeq = $this->getLotSeq($printDate);
 
         return array(
             "printDate"             => $printDate,
@@ -64,20 +61,16 @@ class QrprintController extends Controller
     }
 
     //---------------------------------------------------------------------
-    // 年月日変更、最新連番取得
+    // 連番の取得
     //---------------------------------------------------------------------
-    public function serialNumberChange(Request $request){
+    public function getSerialNumber(Request $request){
         $printDate  = $request->input("printDate");
-        $lotSeq     = $this->getserialNumber($printDate);
+        $lotSeq     = $this->getLotSeq($printDate);
         return array(
             "lotSeq" =>  $lotSeq,
         );
     }
-
-    //---------------------------------------------------------------------
-    // 当日の連番取得
-    //---------------------------------------------------------------------
-    public function getserialNumber($printDate){
+    public function getLotSeq($printDate){
 
         $lotSeq = 1;
 

@@ -2,7 +2,7 @@
   <div>
     <div class="dialogBase" style="overflow-y:none;">
       <div class="dialogBackground"></div>
-      <div class="dialogFrame" style="height:325px;width:550px;overflow-y:auto !important;">
+      <div class="dialogFrame" style="height:340px;width:550px;overflow-y:auto !important;">
         <div class="dialogHeader">
           <div class="dialogTitle" v-if="mode=='new'">
             新規登録

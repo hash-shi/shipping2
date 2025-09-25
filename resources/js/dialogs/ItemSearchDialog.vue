@@ -48,20 +48,27 @@
               <button style="width:100px;height: 32px;" v-on:click="search" :ref="'item_search'" @keyup.enter="moveToNextField('item_search')">検索</button>
             </div>
           </div>
-          <table class="searchResult">
-            <tr>
-              <th class="w100 left">コード</th>
-              <th class="left">名称</th>
-              <th class="w100 left">目付</th>
-              <th class="w100 left">入数</th>
-            </tr>
-            <tr v-for="result in results" :key="result.CODE">
-              <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result)">{{ result.CODE }}</div></td>
-              <td>{{ result.NAME }}</td>
-              <td class="right">{{ result.WEIGHT }}</td>
-              <td class="right">{{ result.QTY_PER_CTN }}</td>
-            </tr>
-          </table>
+
+          <div class="searchResult">
+            <table class="searchRecord">
+              <thead>
+                <tr>
+                  <th class="w100 left">コード</th>
+                  <th class="left">名称</th>
+                  <th class="w100 left">目付</th>
+                  <th class="w100 left">入数</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="result in results" :key="result.CODE">
+                  <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result)">{{ result.CODE }}</div></td>
+                  <td>{{ result.NAME }}</td>
+                  <td class="right">{{ result.WEIGHT }}</td>
+                  <td class="right">{{ result.QTY_PER_CTN }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
         </div>
       </div>
@@ -180,4 +187,7 @@ export default {
 }
 </script>
 <style scoped>
+  .searchResult {
+    height: 350px;
+  }
 </style>

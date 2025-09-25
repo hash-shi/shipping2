@@ -73,18 +73,25 @@
   </div>
 
   <div class="tv">
+    <div class="title">入力確定</div>
+    <div class="value">
+    <div style="font-weight:bold;">{{ sihRecord.CONFIRM_COUNT | decimalFormatZero }}回</div>
+    </div>
+  </div>
+
+  <!-- <div class="tv">
     <div class="title">指示書印刷</div>
     <div class="value">
     <div style="font-weight:bold;">{{ sihRecord.PRINT_COUNT | decimalFormatZero }}回</div>
     </div>
-  </div>
+  </div> -->
 
-  <div class="tv">
+  <!-- <div class="tv">
     <div class="title">伝票印刷</div>
     <div class="value">
     <div style="font-weight:bold;">{{ sihRecord.PRINT2_COUNT | decimalFormatZero }}回</div>
     </div>
-  </div>
+  </div> -->
 
   <!-- <div class="tv">
     <div class="title">積載率</div>
@@ -258,83 +265,88 @@
   行の追加削除、上へ下へは次の感じ
   https://mae.chab.in/archives/2146
   -->
-
-  <table class="searchResult" style="width:1330px">
-    <tr>
-    <th class="w20"></th>
-    <th class="w40">区</th>
-    <th class="w200">コード</th>
-    <th class="w60"></th>
-    <th class="w150">商品名</th>
-    <th class="w60">入数</th>
-    <th class="w60">袋数</th>
-    <th class="w60">数量</th>
-    <th class="showSmall">率</th>
-    <th class="showSmall">積数</th>
-    <th class="w70">積込場所</th>
-    <th class="w100">積込場所名</th>
-    <th class="w150">備考1</th>
-    <th class="w150">備考2</th>
-    </tr>
-    <tr v-for="(sidRecord, index) of sidRecords" :key="index">
-    <td>{{ index + 1 }}</td>
-    <td>
-      <input type="text" autocomplete="off" v-model="sidRecord.HCODE" list="hcodeD" class="w40" :ref="'hcode_' + index" @keyup.enter="moveToNextField('hcode_' + index)">
-      <datalist id="hcodeD">
-      <option v-for="hcodeD in master.HCodesD" :key="hcodeD.CODE" :value="hcodeD.CODE">{{ hcodeD.CODE }} {{ hcodeD.NAME }}</option>
-      </datalist>
-      <!--
-      <select style="width:40px;" v-model="sidRecord.HCODE">
-      <option v-for="hcodeD in mstHCodesD" :key="hcodeD.CODE" :value="hcodeD.CODE">{{ hcodeD.CODE }} {{ hcodeD.NAME }}</option>
-      </select>
-      -->
-    </td>
-    <td v-bind:class="{warning: itemWarning(index)}">
-      <input type="text" autocomplete="off" size="16" list="items_rel" :value="sidRecord.ITEM_CODE | upperCase" @input.lazy="sidRecord.ITEM_CODE = ($event.target.value).toUpperCase()" v-on:keyup="itemC2N(index)" v-on:blur="itemBlur(index);" :ref="'itemCode_' + index" @keyup.enter="moveToNextField('itemCode_' + index)">
-      <font-awesome-icon icon="times" v-on:click="sidRecord.ITEM_CODE='';itemBlur(index);" style="cursor:pointer;" />
-      <font-awesome-icon icon="search" style="cursor:pointer;" v-on:click="showDialog.ItemSearchIndex=index;opneDialog('ItemSearch')" />
-    </td>
-    <td>
-      <font-awesome-icon icon="arrow-up"  style="cursor:pointer;" v-on:click="sidRowSwap(index, 'up')" />
-      <font-awesome-icon icon="arrow-down"  style="cursor:pointer;" v-on:click="sidRowSwap(index, 'down')" />
-      <font-awesome-icon icon="trash"     style="cursor:pointer;" v-on:click="sidRowDel(index)" />
-    </td>
-    <td>
-      <div v-if="sidRecord.ITEM_NAME!=null" v-on:click="openStocksDetail(sidRecord.ITEM_CODE)"  style="text-decoration:underline;color:#0000ff;cursor:pointer;">{{ sidRecord.ITEM_NAME }}</div>
-    </td>
-    <td v-bind:class="{warning:qtyPerCtnWarning(index)}">
-      <input type="number" autocomplete="off" class="delspinner" size="5" style="text-align:right;width:50px;" v-model="sidRecord.QTY_PER_CTN" :ref="'qtyPerCtn_' + index" @keyup.enter="moveToNextField('qtyPerCtn_' + index)">
-    </td>
-    <td>
-      <input type="number" autocomplete="off" size="5" style="text-align:right;width:50px;" v-model="sidRecord.QTY_CTN" :ref="'qtyCtn_' + index" @keyup.enter="moveToNextField('qtyCtn_' + index)">
-    </td>
-    <td class="right">{{ sidRecord.QTY = (sidRecord.QTY_PER_CTN * sidRecord.QTY_CTN) == 0 ? "":(sidRecord.QTY_PER_CTN * sidRecord.QTY_CTN) | comma }}</td>
-    <td class="right showSmall">{{ sidRecord.QTY_CTN2 |decimalFormat }}</td>
-    <td class="right showSmall">{{ sidRecord.QTY2 = (sidRecord.QTY_CTN * sidRecord.QTY_CTN2) | decimalFormat }}</td>
-    <td class="center">
-      <select style="width:40px;" v-model="sidRecord.LOADING_PLACE_CODE" v-on:change="placeBlur(index)" :ref="'loadingPlaceCode_' + index" @keyup.enter="moveToNextField('loadingPlaceCode_' + index)">
-      <option v-for="place in master.Places" :key="place.CODE" :value="place.CODE">{{ place.CODE }} {{ place.NAME }}</option>
-      </select>
-    </td>
-    <td>
-      <input type="text" autocomplete="off" size="10" v-model="sidRecord.LOADING_PLACE_NAME" :ref="'loadingPlaceName_' + index" @keyup.enter="moveToNextField('loadingPlaceName_' + index)">
-    </td>
-    <td>
-      <input type="text" autocomplete="off" size="" list="remark" v-model="sidRecord.REMARK1" :ref="'ramark1_' + index" @keyup.enter="moveToNextField('ramark1_' + index)">
-      <datalist id="remark">
-      <option v-for="(remark, index) in master.Remarks" :key="index">{{ remark.name }}</option>
-      </datalist>
-    </td>
-    <td>
-      <input type="text" autocomplete="off" size="" list="remark" v-model="sidRecord.REMARK2" :ref="'ramark2_' + index" @keyup.enter="moveToNextField('ramark2_' + index)">
-    </td>
-    </tr>
-    <tr>
-    <td colspan=8 ></td>
-    <td><input type="text" autocomplete="off" class="showSmall" disabled name="" v-model="wariai"></td>
-    <td colspan=4></td>
-    </tr>
-  </table>
+  <div class="searchResult">
+    <table class="searchRecord" style="width:1330px">
+      <thead>
+        <tr>
+          <th class="w20"></th>
+          <th class="w40">区</th>
+          <th class="w200">コード</th>
+          <th class="w60"></th>
+          <th class="w150">商品名</th>
+          <th class="w60">入数</th>
+          <th class="w60">袋数</th>
+          <th class="w60">数量</th>
+          <th class="showSmall">率</th>
+          <th class="showSmall">積数</th>
+          <th class="w70">積込場所</th>
+          <th class="w100">積込場所名</th>
+          <th class="w150">備考1</th>
+          <th class="w150">備考2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(sidRecord, index) of sidRecords" :key="index">
+          <td>{{ index + 1 }}</td>
+          <td>
+            <input type="text" autocomplete="off" v-model="sidRecord.HCODE" list="hcodeD" class="w40" :ref="'hcode_' + index" @keyup.enter="moveToNextField('hcode_' + index)">
+            <datalist id="hcodeD">
+            <option v-for="hcodeD in master.HCodesD" :key="hcodeD.CODE" :value="hcodeD.CODE">{{ hcodeD.CODE }} {{ hcodeD.NAME }}</option>
+            </datalist>
+            <!--
+            <select style="width:40px;" v-model="sidRecord.HCODE">
+            <option v-for="hcodeD in mstHCodesD" :key="hcodeD.CODE" :value="hcodeD.CODE">{{ hcodeD.CODE }} {{ hcodeD.NAME }}</option>
+            </select>
+            -->
+          </td>
+          <td v-bind:class="{warning: itemWarning(index)}">
+            <input type="text" autocomplete="off" size="16" list="items_rel" :value="sidRecord.ITEM_CODE | upperCase" @input.lazy="sidRecord.ITEM_CODE = ($event.target.value).toUpperCase()" v-on:keyup="itemC2N(index)" v-on:blur="itemBlur(index);" :ref="'itemCode_' + index" @keyup.enter="moveToNextField('itemCode_' + index)">
+            <font-awesome-icon icon="times" v-on:click="sidRecord.ITEM_CODE='';itemBlur(index);" style="cursor:pointer;" />
+            <font-awesome-icon icon="search" style="cursor:pointer;" v-on:click="showDialog.ItemSearchIndex=index;opneDialog('ItemSearch')" />
+          </td>
+          <td>
+            <font-awesome-icon icon="arrow-up"  style="cursor:pointer;" v-on:click="sidRowSwap(index, 'up')" />
+            <font-awesome-icon icon="arrow-down"  style="cursor:pointer;" v-on:click="sidRowSwap(index, 'down')" />
+            <font-awesome-icon icon="trash"     style="cursor:pointer;" v-on:click="sidRowDel(index)" />
+          </td>
+          <td>
+            <div v-if="sidRecord.ITEM_NAME!=null" v-on:click="openStocksDetail(sidRecord.ITEM_CODE)"  style="text-decoration:underline;color:#0000ff;cursor:pointer;">{{ sidRecord.ITEM_NAME }}</div>
+          </td>
+          <td v-bind:class="{warning:qtyPerCtnWarning(index)}">
+            <input type="number" autocomplete="off" class="delspinner" size="5" style="text-align:right;width:50px;" v-model="sidRecord.QTY_PER_CTN" :ref="'qtyPerCtn_' + index" @keyup.enter="moveToNextField('qtyPerCtn_' + index)">
+          </td>
+          <td>
+            <input type="number" autocomplete="off" size="5" style="text-align:right;width:50px;" v-model="sidRecord.QTY_CTN" :ref="'qtyCtn_' + index" @keyup.enter="moveToNextField('qtyCtn_' + index)">
+          </td>
+          <td class="right">{{ sidRecord.QTY = (sidRecord.QTY_PER_CTN * sidRecord.QTY_CTN) == 0 ? "":(sidRecord.QTY_PER_CTN * sidRecord.QTY_CTN) | comma }}</td>
+          <td class="right showSmall">{{ sidRecord.QTY_CTN2 |decimalFormat }}</td>
+          <td class="right showSmall">{{ sidRecord.QTY2 = (sidRecord.QTY_CTN * sidRecord.QTY_CTN2) | decimalFormat }}</td>
+          <td class="center">
+            <select style="width:40px;" v-model="sidRecord.LOADING_PLACE_CODE" v-on:change="placeBlur(index)" :ref="'loadingPlaceCode_' + index" @keyup.enter="moveToNextField('loadingPlaceCode_' + index)">
+            <option v-for="place in master.Places" :key="place.CODE" :value="place.CODE">{{ place.CODE }} {{ place.NAME }}</option>
+            </select>
+          </td>
+          <td>
+            <input type="text" autocomplete="off" size="10" v-model="sidRecord.LOADING_PLACE_NAME" :ref="'loadingPlaceName_' + index" @keyup.enter="moveToNextField('loadingPlaceName_' + index)">
+          </td>
+          <td>
+            <input type="text" autocomplete="off" size="" list="remark" v-model="sidRecord.REMARK1" :ref="'ramark1_' + index" @keyup.enter="moveToNextField('ramark1_' + index)">
+            <datalist id="remark">
+            <option v-for="(remark, index) in master.Remarks" :key="index">{{ remark.name }}</option>
+            </datalist>
+          </td>
+          <td>
+            <input type="text" autocomplete="off" size="" list="remark" v-model="sidRecord.REMARK2" :ref="'ramark2_' + index" @keyup.enter="moveToNextField('ramark2_' + index)">
+          </td>
+          </tr>
+          <tr>
+          <td colspan=8></td>
+          <td><input type="text" autocomplete="off" class="showSmall" disabled name="" v-model="wariai"></td>
+          <td colspan=5></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <pre>　</pre>
 
@@ -468,11 +480,11 @@ export default {
 
       var URL = "";
       if (sihId != "" && orderNo != "" && hCode != "" && shipDate != "" && userCode != "" && sihIdBase) {
-        URL = "/api/shippingDetail/" + sihId + "/" + orderNo + "/" + hCode + "/" + shipDate + "/" + userCode + "/" + sihIdBase;
+        URL = "/api/shipping/detail/" + sihId + "/" + orderNo + "/" + hCode + "/" + shipDate + "/" + userCode + "/" + sihIdBase;
       } else if (sihId != "" && orderNo != "" && hCode != "" && shipDate != "" && userCode != "") {
-        URL = "/api/shippingDetail/" + sihId + "/" + orderNo + "/" + hCode + "/" + shipDate + "/" + userCode;
+        URL = "/api/shipping/detail/" + sihId + "/" + orderNo + "/" + hCode + "/" + shipDate + "/" + userCode;
       } else if (sihId != "") {
-        URL = "/api/shippingDetail/" + sihId;
+        URL = "/api/shipping/detail/" + sihId;
       }
 
       await axios.get(URL, {})
@@ -538,8 +550,8 @@ export default {
       }
       
       // 読込回数が多いのでまとめて取得できないか？
-      await axios.post("/api/master/detail", {
-      'HCODE'  : this.sihRecord.HCODE,
+      await axios.post("/api/shipping/detail/masters", {
+        'HCODE'  : this.sihRecord.HCODE,
       })
       .then(response => {
         var data = response.data;
@@ -595,7 +607,7 @@ export default {
     susp: async function(){
       // IDと受注番号は登録時に最新を取り直す。
       if (confirm("一時保存します。よろしいですか？")) {
-        await axios.post("/api/shipping/susp", {
+        await axios.post("/api/shipping/detail/susp", {
           'isNew'   : this.isNew,
           'sihRecord' : this.sihRecord,
           'sidRecords': this.sidRecords,
@@ -613,7 +625,7 @@ export default {
     // 入力確定
     conf: async function() {
       if (confirm("入力確定をします。よろしいですか？")) {
-        await axios.post("/api/shipping/conf", {
+        await axios.post("/api/shipping/detail/conf", {
           'isNew'     : this.isNew,
           'sihRecord' : this.sihRecord,
           'sidRecords': this.sidRecords,
@@ -632,7 +644,7 @@ export default {
     // 出荷完了
     comp: async function() {
       if (confirm("出荷完了をします。よろしいですか？")) {
-        await axios.post("/api/shipping/comp", {
+        await axios.post("/api/shipping/detail/comp", {
           'isNew'   : this.isNew,
           'sihRecord' : this.sihRecord,
           'sidRecords': this.sidRecords,
@@ -664,7 +676,7 @@ export default {
 
     // 指示書入力
     instructionPrint: async function(){
-      await axios.post("/api/shipping/inst", {
+      await axios.post("/api/shipping/detail/inst", {
         'isNew'     : this.isNew,
         'sihRecord' : this.sihRecord,
         'sidRecords': this.sidRecords,
@@ -672,7 +684,7 @@ export default {
       .then(response => {
         var sihId = response.data.SIH_ID;
         var orderNo = response.data.ORDER_NO;
-        const printWindow = window.open("/shipping/instructionPrint/" + sihId);
+        const printWindow = window.open("/shipping/detail/instructions/" + sihId);
         // 再描画のタイミングズレの吸収
         this.$nextTick(() => {
           this.init(sihId, orderNo, "", "", "", "");
@@ -683,7 +695,7 @@ export default {
 
     // 伝票印刷
     slipPrint: async function(){
-      await axios.post("/api/shipping/vouc", {
+      await axios.post("/api/shipping/detail/slip", {
         'isNew'     : this.isNew,
         'sihRecord' : this.sihRecord,
         'sidRecords': this.sidRecords,
@@ -691,7 +703,7 @@ export default {
       .then(response => {
         var sihId = response.data.SIH_ID;
         var orderNo = response.data.ORDER_NO;
-        const printWindow = window.open("/shipping/slipPrint/" + sihId);
+        const printWindow = window.open("/shipping/detail/slip/" + sihId);
         // 再描画のタイミングズレの吸収
         this.$nextTick(() => {
           this.init(sihId, orderNo, "", "", "", "");
@@ -1515,46 +1527,46 @@ export default {
 </script>
 <style scoped>
   td.warning {
-  background-color: yellow;
+    background-color: yellow;
   }
 
   div.information {
-  position: absolute;
-  width: 240px;
-  bottom: 30px;
-  text-align: left;
-  background-color: #ffffff;
-  border: 1px solid #000000;
-  border-radius: 3px;
-  padding: 5px;
-  box-sizing: border-box;
-  font-size: 14px;
-  min-height: 28px;
-  display: none;
+    position: absolute;
+    width: 240px;
+    bottom: 30px;
+    text-align: left;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 3px;
+    padding: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+    min-height: 28px;
+    display: none;
   }
 
   .showSmall{
-  width:25px;
-  font-size:13px;
+    width:25px;
+    font-size:13px;
   }
 
   .delspinner::-webkit-outer-spin-button,
   .delspinner::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
   }
 
   .delspinner{
-  -moz-appearance:textfield;
+    -moz-appearance:textfield;
   }
 
   .awake {
-  background-color: #ffff00;
-  border-color: blue;
-  border-radius: 3px;
-  border-width: 2px;
+    background-color: #ffff00;
+    border-color: blue;
+    border-radius: 3px;
+    border-width: 2px;
   }
   .awake:hover{
-  background-color: #e6e600;
+    background-color: #e6e600;
   }
 </style>

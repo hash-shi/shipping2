@@ -124,9 +124,9 @@
         </div>
         <br />
 
-        <table class="searchResult">
+        <div>
           <tr><th>ラベル発行履歴</th></tr>
-        </table>
+        </div>
         {{ ((pageNow - 1) * pageDataCount) + (pageResults.length > 0 ? 1:0) }}件 から {{ ((pageNow - 1) * pageDataCount) + pageResults.length }}件 までを表示（全 {{ qrRecords.length }} 件）
         <br />
 
@@ -142,85 +142,88 @@
         <br />
 
         <input type="button" value="再発行" id="printButtonRe" v-on:click="qrPrintRe" v-bind:disabled="this.qrRecords == null || this.qrRecords.length==0" :ref="'printButtonRe'" @keyup.enter="moveToNextField('printButtonRe')">
-        <table class="searchResult">
-          <tr>
-            
-            <th class="w80">
-              再発行
-            </th>
-            <th class="w120">
-              年月日
-              <div class="sort">
-                <div class="down" v-bind:class="{sortSelect:sortKey=='PRINT_DATE'&&sortOrder=='desc'}"><font-awesome-icon icon="sort-amount-down" v-on:click="setSort('PRINT_DATE', 'desc')" /></div>
-                <div class="up"   v-bind:class="{sortSelect:sortKey=='PRINT_DATE'&&sortOrder=='asc' }"><font-awesome-icon icon="sort-amount-up-alt" v-on:click="setSort('PRINT_DATE', 'asc')" /></div>
-              </div>
-            </th>
-            <th class="w100">
-              連番
-              <div class="sort">
-                <div class="down" v-bind:class="{sortSelect:sortKey=='LOTSEQ'&&sortOrder=='desc'}"><font-awesome-icon icon="sort-amount-down" v-on:click="setSort('LOTSEQ', 'desc')" /></div>
-                <div class="up"   v-bind:class="{sortSelect:sortKey=='LOTSEQ'&&sortOrder=='asc' }"><font-awesome-icon icon="sort-amount-up-alt" v-on:click="setSort('LOTSEQ', 'asc')" /></div>
-              </div>
-            </th>
-            <th class="w120">
-              仕入先/倉庫
-              <div class="sort">
-                <div class="down" v-bind:class="{sortSelect:sortKey=='SW_CODE'&&sortOrder=='desc'}"><font-awesome-icon icon="sort-amount-down" v-on:click="setSort('SW_CODE', 'desc')" /></div>
-                <div class="up"   v-bind:class="{sortSelect:sortKey=='SW_CODE'&&sortOrder=='asc' }"><font-awesome-icon icon="sort-amount-up-alt" v-on:click="setSort('SW_CODE', 'asc')" /></div>
-              </div>
-            </th>
-            <th class="w300">
-              仕入先名/倉庫名
-            </th>
-            <th class="w120">
-              商品
-              <div class="sort">
-                <div class="down" v-bind:class="{sortSelect:sortKey=='ITEM_CODE'&&sortOrder=='desc'}"><font-awesome-icon icon="sort-amount-down" v-on:click="setSort('ITEM_CODE', 'desc')" /></div>
-                <div class="up"   v-bind:class="{sortSelect:sortKey=='ITEM_CODE'&&sortOrder=='asc' }"><font-awesome-icon icon="sort-amount-up-alt" v-on:click="setSort('ITEM_CODE', 'asc')" /></div>
-              </div>
-            </th>
-            <th class="w300">
-              商品名
-            </th>
-            <th class="w80">
-              入数
-            </th>
-            <th class="w80">
-              形態
-            </th>
-          </tr>
-          <tr v-for="(pageResult, index) of this.pageResults" :key="index">
-
-            <td style="text-align: center;">
-              <input type="checkbox" name="check" v-model="pageResult.PRINT_FLG">
-            </td>
-            <td style="text-align: center;">
-              {{ pageResult.PRINT_DATE }}
-            </td>
-            <td style="text-align: center;">
-              {{ pageResult.LOTSEQ }}
-            </td>
-            <td style="text-align: center;">
-              {{ pageResult.SW_CODE }}
-            </td>
-            <td style="text-align: center;">
-              {{ pageResult.SW_NAME }}
-            </td>
-            <td style="text-align: center;">
-              {{ pageResult.ITEM_CODE }}
-            </td>
-            <td style="text-align: center;">
-              {{ pageResult.ITEM_NAME }}
-            </td>
-            <td style="text-align: center;">
-              {{ pageResult.QTY_PER }}
-            </td>
-            <td style="text-align: center;">
-              {{ pageResult.PATTERN }}
-            </td>
-
-          </tr>
-        </table>
+        <div class="searchResult">
+          <table class="searchRecord">
+            <thead>
+              <tr>
+                <th class="w80">
+                  再発行
+                </th>
+                <th class="w120">
+                  年月日
+                  <div class="sort">
+                    <div class="down" v-bind:class="{sortSelect:sortKey=='PRINT_DATE'&&sortOrder=='desc'}"><font-awesome-icon icon="sort-amount-down" v-on:click="setSort('PRINT_DATE', 'desc')" /></div>
+                    <div class="up"   v-bind:class="{sortSelect:sortKey=='PRINT_DATE'&&sortOrder=='asc' }"><font-awesome-icon icon="sort-amount-up-alt" v-on:click="setSort('PRINT_DATE', 'asc')" /></div>
+                  </div>
+                </th>
+                <th class="w100">
+                  連番
+                  <div class="sort">
+                    <div class="down" v-bind:class="{sortSelect:sortKey=='LOTSEQ'&&sortOrder=='desc'}"><font-awesome-icon icon="sort-amount-down" v-on:click="setSort('LOTSEQ', 'desc')" /></div>
+                    <div class="up"   v-bind:class="{sortSelect:sortKey=='LOTSEQ'&&sortOrder=='asc' }"><font-awesome-icon icon="sort-amount-up-alt" v-on:click="setSort('LOTSEQ', 'asc')" /></div>
+                  </div>
+                </th>
+                <th class="w120">
+                  仕入先/倉庫
+                  <div class="sort">
+                    <div class="down" v-bind:class="{sortSelect:sortKey=='SW_CODE'&&sortOrder=='desc'}"><font-awesome-icon icon="sort-amount-down" v-on:click="setSort('SW_CODE', 'desc')" /></div>
+                    <div class="up"   v-bind:class="{sortSelect:sortKey=='SW_CODE'&&sortOrder=='asc' }"><font-awesome-icon icon="sort-amount-up-alt" v-on:click="setSort('SW_CODE', 'asc')" /></div>
+                  </div>
+                </th>
+                <th class="w300">
+                  仕入先名/倉庫名
+                </th>
+                <th class="w120">
+                  商品
+                  <div class="sort">
+                    <div class="down" v-bind:class="{sortSelect:sortKey=='ITEM_CODE'&&sortOrder=='desc'}"><font-awesome-icon icon="sort-amount-down" v-on:click="setSort('ITEM_CODE', 'desc')" /></div>
+                    <div class="up"   v-bind:class="{sortSelect:sortKey=='ITEM_CODE'&&sortOrder=='asc' }"><font-awesome-icon icon="sort-amount-up-alt" v-on:click="setSort('ITEM_CODE', 'asc')" /></div>
+                  </div>
+                </th>
+                <th class="w300">
+                  商品名
+                </th>
+                <th class="w80">
+                  入数
+                </th>
+                <th class="w80">
+                  形態
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(pageResult, index) of this.pageResults" :key="index">
+                <td style="text-align: center;">
+                  <input type="checkbox" name="check" v-model="pageResult.PRINT_FLG">
+                </td>
+                <td style="text-align: center;">
+                  {{ pageResult.PRINT_DATE }}
+                </td>
+                <td style="text-align: center;">
+                  {{ pageResult.LOTSEQ }}
+                </td>
+                <td style="text-align: center;">
+                  {{ pageResult.SW_CODE }}
+                </td>
+                <td style="text-align: center;">
+                  {{ pageResult.SW_NAME }}
+                </td>
+                <td style="text-align: center;">
+                  {{ pageResult.ITEM_CODE }}
+                </td>
+                <td style="text-align: center;">
+                  {{ pageResult.ITEM_NAME }}
+                </td>
+                <td style="text-align: center;">
+                  {{ pageResult.QTY_PER }}
+                </td>
+                <td style="text-align: center;">
+                  {{ pageResult.PATTERN }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       <!-- 仕入先 -->
       <SupplierSearchDialog   v-if="this.showDialog.SupplierSearch"  :officeCode="this.officeCode" :hCode="null" @close="closeDialog('SupplierSearch')"  @select="selectSupplierDialog"  ></SupplierSearchDialog>
@@ -247,7 +250,7 @@ export default {
   },
 
   mounted: async function(){
-    await axios.get("/api/qrPrintInit").then(response =>{
+    await axios.get("/api/qrPrint").then(response =>{
       this.printDate            = response.data.printDate;
       this.numSheet             = response.data.numSheet;
       this.officeCode           = response.data.officeCode;
@@ -489,7 +492,7 @@ export default {
     qrPrint: async function(){
 
       // 最後に最新の連番を取得しなおす。
-      await axios.post("api/serialNumberChange", { "printDate" : this.printDate }).then (response =>{
+      await axios.post("api/qrPrint/getSerialNumber", { "printDate" : this.printDate }).then (response =>{
         this.lotSeq = response.data.lotSeq;
       });
       
@@ -510,12 +513,17 @@ export default {
         var printResultID = response.data.printResultID;
 
         axios.get("api/resetSession/",{}).then (response =>{
-          
           // 印刷
-          window.open("/qrPrint/" + printResultID, "印刷ページ");
-          // 最新連番取得
-          axios.post("api/serialNumberChange", { "printDate" : this.printDate }).then (response =>{ this.lotSeq = response.data.lotSeq; });
-
+          const printWindow = window.open("/qrPrint/" + printResultID, "印刷ページ");
+          // 再描画のタイミングズレの吸収
+          this.$nextTick(() => {
+            axios.post("api/qrPrint/getSerialNumber", { "printDate" : this.printDate }).then (response =>{ 
+              // 最新連番取得
+              this.lotSeq = response.data.lotSeq;
+              // 履歴の検索
+              this.search();
+            });
+          });
         });
       });
     },
@@ -540,19 +548,24 @@ export default {
         var printResultID = response.data.printResultID;
 
         axios.get("api/resetSession/",{}).then (response =>{
-
           // 印刷
-          window.open("/qrPrint/" + printResultID, "印刷ページ");
-          // 最新連番取得
-          axios.post("api/serialNumberChange", { "printDate" : this.printDate }).then (response =>{ this.lotSeq = response.data.lotSeq; });
-
+          const printWindow = window.open("/qrPrint/" + printResultID, "印刷ページ");
+          // 再描画のタイミングズレの吸収
+          this.$nextTick(() => {
+            axios.post("api/qrPrint/getSerialNumber", { "printDate" : this.printDate }).then (response =>{ 
+              // 最新連番取得
+              this.lotSeq = response.data.lotSeq;
+              // 履歴の検索
+              this.search();
+            });
+          });
         });
       });
     },
 
     // 日付変更(フォーカス外れ時イベント)
     printDateChange : async function(){
-      await axios.post("api/serialNumberChange", { "printDate" : this.printDate }).then (response =>{
+      await axios.post("api/qrPrint/getSerialNumber", { "printDate" : this.printDate }).then (response =>{
         this.lotSeq = response.data.lotSeq;
       });
 
@@ -629,13 +642,7 @@ export default {
       this.sortKey = sortKey;
       this.sortOrder = sortOrder;
     },
-
-    pdfPrint : async function(pdfName) {
-      await axios.get("api/resetSession" , {}).then (response =>{
-        window.open("/pdfPrint/" + pdfName, "印刷ページ");
-      });
-    },
-
+    
 		//---------------------------------------------------------------------
 		// タブキーorEnterキー
 		//---------------------------------------------------------------------
@@ -778,6 +785,9 @@ export default {
   }
   div.sortSelect {
     color: #ff0000;
+  }
+  .searchResult {
+    height: 360px;
   }
 </style>
 

@@ -36,18 +36,26 @@
               <button style="width:100px;height: 32px;" v-on:click="search" :ref="'delivery_search'" @keyup.enter="search">検索</button>
             </div>
           </div>
-          <table class="searchResult">
-            <tr>
-              <th class="w100 left">コード</th>
-              <th class="left">名称</th>
-              <th class="left">カナ</th>
-            </tr>
-            <tr v-for="result in results" :key="(result.CUSTOMER_CODE + '-' + result.CODE)">
-              <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.CODE)">{{ result.CODE }}</div></td>
-              <td>{{ result.NAME }}</td>
-              <td>{{ result.NAME2 }}</td>
-            </tr>
-          </table>
+
+          <div class="searchResult">
+            <table class="searchRecord">
+              <thead>
+                <tr>
+                  <th class="w100 left">コード</th>
+                  <th class="left">名称</th>
+                  <th class="left">カナ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="result in results" :key="(result.CUSTOMER_CODE + '-' + result.CODE)">
+                  <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.CODE)">{{ result.CODE }}</div></td>
+                  <td>{{ result.NAME }}</td>
+                  <td>{{ result.NAME2 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </div>
     </div>
@@ -164,4 +172,7 @@ export default {
 }
 </script>
 <style scoped>
+  .searchResult {
+    height: 350px;
+  }
 </style>

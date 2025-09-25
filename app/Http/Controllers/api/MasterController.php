@@ -25,102 +25,10 @@ use App\Models\warehouses;
 use App\Libs\ProjectCommon;
 use Illuminate\Http\Request;
 use DB;
-class MasterController extends Controller
-{
-	//-------------------------------------------------------------------------
-	// SSO用ユーザー情報の取得
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getSSO(Request $request, $userCode){
-		return users::where('CODE', $userCode)->orderBy('CODE')->get();
-	}
-
-	//-------------------------------------------------------------------------
-	// 設定ファイルの取得
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getConfig(Request $request){
-		// return configures::whereNotNull('ID')->get();
-		return json_decode(json_encode(configures::whereNotNull('ID')->get()), true);
-	}
-
-	//-------------------------------------------------------------------------
-	// サーバーシステム日付の取得
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getToday(Request $request){
-		return date("Y-m-d");
-	}
-
-	//-------------------------------------------------------------------------
-	// Users
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getUsers(Request $request){
-		// return users::whereNotNull('CODE')->orderBy('CODE')->get();
-		return users::whereNotNull('CODE')->orderBy('CODE')->select('CODE', 'NAME')->get();
-	}
-
-	//-------------------------------------------------------------------------
-	// ID
-	// 出荷指示のIDを採番
-	// 
-	//-------------------------------------------------------------------------
-	public function getId(Request $request){
-
-		// 最大値を取得
-		$sihId = sih::max("SIH_ID");
-		// 返却
-		return $sihId + 1;
-	}
-
-	//-------------------------------------------------------------------------
-	// ORDER_NO
-	// 出荷指示の受注番号を採番
-	// 
-	//-------------------------------------------------------------------------
-	public function getOrderNo(Request $request){
-
-		$orderNo = "1";
-
-		// 採番最大値取得
-		$config = $this->getConfig($request);
-		$orderNoMax = $config[array_search('ORDER_NO_MAX', array_column($config, 'ID'))]['VALUE'];
-
-		// 最新の受注番号を取得
-		$orderNoNext = $config[array_search('ORDER_NO_NEXT', array_column($config, 'ID'))]['VALUE'];
-
-		// $query = sih::query();
-		// $query->where('SIH_ID', sih::max("SIH_ID"));
-		// $record = $query->first();
-
-		// 受注番号を比較して格納
-		// if ($record != null && intval($record['ORDER_NO']) < intval($orderNoMax)) { $orderNo = $record['ORDER_NO']; }
-		if (intval($orderNoNext) < intval($orderNoMax)) { $orderNo = $orderNoNext; }
-
-		// + 1して返却
-		// return sprintf('%06d', (intval($orderNo) + 1));
-		return sprintf('%06d', (intval($orderNo)));
-	}
-
-	//-------------------------------------------------------------------------
-	// ORDER_NO
-	// 出荷指示の登録時に最新番号を取り直す&+1値に更新する。
-	// 取り直した場合を考慮して最新番号を返却する。
-	//-------------------------------------------------------------------------
-	public function updOrderNo(Request $request){
-		$orderNo = $this->getOrderNo($request);
-		configures::where('ID', 'ORDER_NO_NEXT')->update(['VALUE' => (intval($orderNo) + 1)]);
-		return $orderNo;
-	}
-
+class MasterController extends Controller {
 	//-------------------------------------------------------------------------
 	// Customers
-	// 
+	// 得意先
 	// 
 	//-------------------------------------------------------------------------
 	public function getCustomers(Request $request){
@@ -168,10 +76,43 @@ class MasterController extends Controller
 		// 返却
 		return $customers;
 	}
+	public function getCustomerName(Request $request){
+
+		$sql = "";
+		$param = [];
+		$result = "";
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code     = $request->input("code") ?? "0";
+
+		$sql = "
+			select
+				NAME
+			from
+				CUSTOMERS
+			where
+				1 = 1
+			and CODE = ?
+			order by
+				CODE
+		";
+
+		// コード
+		$param[] = $code;
+
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
+		// 返却
+		if (0 < count($record)) { $result = $record[0]["NAME"]; }
+		return $result;
+	}
 
 	//-------------------------------------------------------------------------
 	// Deliveries
-	// 
+	// 納入先
 	// 
 	//-------------------------------------------------------------------------
 	public function getDeliveries(Request $request){
@@ -224,109 +165,51 @@ class MasterController extends Controller
 		// 返却
 		return $deliveries;
 	}
+	public function getDeliverieName(Request $request){
 
-	//-------------------------------------------------------------------------
-	// Suppliers
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getSuppliers(Request $request){
+		$sql = "";
+		$param = [];
+		$result = "";
 
 		//---------------------------------------------------------------------
 		// パラメータ取得
 		//---------------------------------------------------------------------
-		$searchOfficeCode       = $request->input("searchOfficeCode");
-		$searchSupplierKana     = $request->input("searchSupplierKana");
-		$searchSupplierName     = $request->input("searchSupplierName");
-		$notLike                = $request->input("notLike");
+		$code         = $request->input("code") ?? "0";
+		$customerCode = $request->input("customerCode");
 
-		
-		// 検索条件の組み立て
-		$query = suppliers::query();
+		$sql = "
+			select
+				NAME
+			from
+				DELIVERIES
+			where
+				1 = 1
+			and CODE = ?
+		";
+		// コード
+		$param[] = $code;
 
-		$query->where('ON_NOT_USE', 0);
-
-		// 営業所コード
-		if ($searchOfficeCode != null && $searchOfficeCode != ""){
-			if ($notLike == 0) {
-				$query->where('CODE', 'LIKE', $searchOfficeCode . '%');
-			} else {
-				$query->where('CODE', 'NOT LIKE', $searchOfficeCode . '%');
-			}
+		if ($customerCode != null && $customerCode != "") {
+			$sql = $sql . " and CUSTOMER_CODE = ? ";
+			$param[] = $customerCode;
 		}
 
-		// カナ
-		if ($searchSupplierKana != null && $searchSupplierKana != ""){
-			$query->where('NAME1', 'LIKE', '%' . mb_convert_kana($searchSupplierKana, "kvhas") . '%');
-		}
+		$sql = $sql . "
+			order by
+				CODE
+		";
 
-		// 名
-		if ($searchSupplierName != null && $searchSupplierName != ""){
-			$query->where('NAME', 'LIKE', '%' . $searchSupplierName . '%');
-		}
-
-		// 並び順
-		$query->orderBy('CODE', 'asc');
-
-		// 検索結果
-		// $customers = ProjectCommon::getRelation('\App\Models\suppliers', $query)->get();
-		$suppliers = $query->select('CODE','NAME','NAME1')->get();
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
 
 		// 返却
-		return $suppliers;
-	}
-
-	//-------------------------------------------------------------------------
-	// Warehouses
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getWarehouses(Request $request){
-
-		//---------------------------------------------------------------------
-		// パラメータ取得
-		//---------------------------------------------------------------------
-		$searchOfficeCode       = $request->input("searchOfficeCode");
-		$searchWarehouseKana    = $request->input("searchWarehouseKana");
-		$searchWarehouseName    = $request->input("searchWarehouseName");
-		$notLike                = $request->input("notLike");
-
-		// 検索条件の組み立て
-		$query = warehouses::query();
-
-		// 営業所コード
-		if ($searchOfficeCode != null && $searchOfficeCode != ""){
-			if ($notLike == 0) {
-				$query->where('CODE', 'LIKE', $searchOfficeCode . '%');
-			} else {
-				$query->where('CODE', 'NOT LIKE', $searchOfficeCode . '%');
-			}
-		}
-
-		// カナ
-		if ($searchWarehouseKana != null && $searchWarehouseKana != ""){
-			$query->where('NAME1', 'LIKE', '%' . mb_convert_kana($searchWarehouseKana, "kvhas") . '%');
-		}
-
-		// 名
-		if ($searchWarehouseName != null && $searchWarehouseName != ""){
-			$query->where('NAME', 'LIKE', '%' . $searchWarehouseName . '%');
-		}
-
-		// 並び順
-		$query->orderBy('CODE', 'asc');
-
-		// 検索結果
-		// $customers = ProjectCommon::getRelation('\App\Models\warehouses', $query)->get();
-		$warehouses = $query->select('CODE','NAME','NAME1')->get();
-
-		// 返却
-		return $warehouses;
+		if (0 < count($record)) { $result = $record[0]["NAME"]; }
+		return $result;
 	}
 
 	//-------------------------------------------------------------------------
 	// Drivers
-	// 
+	// 運転手
 	// 
 	//-------------------------------------------------------------------------
 	public function getDrivers(Request $request){
@@ -395,10 +278,108 @@ class MasterController extends Controller
 		// 返却
 		return $drivers;
 	}
+	public function getDriverName(Request $request){
+
+		$sql = "";
+		$param = [];
+		$result = "";
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code         = $request->input("code") ?? "0";
+		$truckerCode	= $request->input("truckerCode");
+		$companyCode	= $request->input("companyCode");
+
+		$sql = "
+			select
+				NAME
+			from
+				DRIVERS
+			where
+				1 = 1
+			and CODE = ?
+		";
+		// コード
+		$param[] = $code;
+
+		if ($truckerCode != null && $truckerCode != "") {
+			$sql = $sql . " and TRUCKER_CODE = ? ";
+			$param[] = $truckerCode;
+		}
+
+		if ($companyCode != null && $companyCode != "") {
+			$sql = $sql . " and COMPANY_CODE = ? ";
+			$param[] = $companyCode;
+		}
+
+		$sql = $sql . "
+			order by
+				CODE,
+				TRUCKER_CODE
+		";
+
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
+		// 返却
+		if (0 < count($record)) { $result = $record[0]["NAME"]; }
+		return $result;
+	}
+	//---------------------------------------------------------------------
+	// 特殊処理、運転手コードから運送会社コードを取得
+	//---------------------------------------------------------------------
+	public function getDriverTrucker(Request $request){
+
+		$sql = "";
+		$param = [];
+		$result = "";
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code         = $request->input("code") ?? "0";
+		$truckerCode	= $request->input("truckerCode");
+		$companyCode	= $request->input("companyCode");
+
+		$sql = "
+			select
+				TRUCKER_CODE
+			from
+				DRIVERS
+			where
+				1 = 1
+			and CODE = ?
+		";
+		// コード
+		$param[] = $code;
+
+		if ($truckerCode != null && $truckerCode != "") {
+			$sql = $sql . " and TRUCKER_CODE = ? ";
+			$param[] = $truckerCode;
+		}
+		if ($companyCode != null && $companyCode != "") {
+			$sql = $sql . " and COMPANY_CODE = ? ";
+			$param[] = $companyCode;
+		}
+
+		$sql = $sql . "
+			order by
+				CODE,
+				TRUCKER_CODE
+		";
+
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
+		// 返却
+		if (0 < count($record)) { $result = $record[0]["TRUCKER_CODE"]; }
+		return $result;
+	}
 
 	//-------------------------------------------------------------------------
 	// HCodesH
-	// 
+	// 取引区分(鑑)
 	// 
 	//-------------------------------------------------------------------------
 	public function getHCodesH(Request $request){
@@ -429,7 +410,7 @@ class MasterController extends Controller
 
 	//-------------------------------------------------------------------------
 	// HCodesD
-	// 
+	// 取引区分(明細)
 	// 
 	//-------------------------------------------------------------------------
 	public function getHCodesD(Request $request){
@@ -470,7 +451,7 @@ class MasterController extends Controller
 
 	//-------------------------------------------------------------------------
 	// Items
-	// 
+	// 商品
 	// 
 	//-------------------------------------------------------------------------
 	public function getItems(Request $request){
@@ -550,136 +531,210 @@ class MasterController extends Controller
 		// 返却
 		return $items;
 	}
+	public function getItemName(Request $request){
 
-	//-------------------------------------------------------------------------
-	// Places
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getPlaces(Request $request){
+		$sql = "";
+		$param = [];
+		$result = "";
 
-		// 検索条件の組み立て
-		$query = places::query();
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code         		= $request->input("code") ?? "0";
+		$hCode            = $request->input("hCode") ?? "0";
+		$customerCode     = $request->input("customerCode");
+		$deliveryCode     = $request->input("deliveryCode");
+		$supplierCode     = $request->input("supplierCode");
 
-		$query->where('ON1', 1);
+		$sql = "
+			select
+				NAME
+			from
+				ITEMS
+			where
+				1 = 1
+			and CODE = ?
+		";
+		$param[] = $code;
 
-		// 並び順
-		$query->orderBy('CODE', 'asc');
-
-		// 検索結果
-		// $customers = ProjectCommon::getRelation('\App\Models\places', $query)->get();
-		$places = $query->get();
-
-		// 返却
-		return $places;
-	}
-
-	//-------------------------------------------------------------------------
-	// ItemCustomer
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getItemCustomer(Request $request){
-
-		$searchCustomerCode     = $request->input("searchCustomerCode");
-		$searchDeliveryCode     = $request->input("searchDeliveryCode");
-
-		// 検索条件の組み立て
-		$query = itemsCustomer::query();
-
-		// 得意先コード
-		if ($searchCustomerCode != null && $searchCustomerCode != "") {
-			$query->where('CUSTOMER_CODE', $searchCustomerCode);
-		}
-
-		// 納入先コード
-		$query->where(function ($queryDel) use($searchDeliveryCode) {
-			if ($searchDeliveryCode != null && $searchDeliveryCode != "") {
-				$queryDel->where('DELIVERY_CODE', $searchDeliveryCode)->orWhereNull('DELIVERY_CODE');
+		// 売上or仕入で分岐する。
+		if ($hCode == 1 || $hCode == 4) {
+			// 得意先別納入先別マスタ
+			$sql += "
+				and CODE in (
+					select distinct
+						ITEM_CODE
+					from
+						ITEMS_CUSTOMER
+					where
+						1 = 1
+			";
+			if ($customerCode != null && $customerCode != "") {
+				$sql += " and CUSTOMER_CODE = ? ";
+				$param[] = $customerCode;
 			}
-		});
-
-		$query->select('CUSTOMER_CODE', 'CUSTOMER_NAME', 'DELIVERY_CODE', 'DELIVERY_NAME', 'ITEM_CODE', 'ITEM_NAME');
-		$query->distinct();
-		$query->orderBy('CUSTOMER_CODE');
-
-		// 検索結果
-		$itemsCustomer = $query->get();
-		// 返却
-		return $itemsCustomer;
-	}
-
-	//-------------------------------------------------------------------------
-	// ItemSupplier
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getItemSupplier(Request $request){
-
-		$searchSupplierCode     = $request->input("searchSupplierCode");
-
-		// 検索条件の組み立て
-		$query = itemsSupplier::query();
-
-		// 仕入先コード
-		if ($searchSupplierCode != null && $searchSupplierCode != "") {
-			$query->where('SUPPLIER_CODE', $searchSupplierCode);
+			if ($deliveryCode != null && $deliveryCode != "") {
+				$sql += " and (DELIVERY_CODE = ? or DELIVERY_CODE is null) ";
+				$param[] = $deliveryCode;
+			}
+			$sql += "
+				)
+			";
+		} else if ($hCode != 1 && $hCode != 4) {
+			// 仕入先別マスタ
+			$sql += "
+				and CODE in (
+					select distinct
+						ITEM_CODE
+					from
+						ITEMS_SUPPLIER
+					where
+						1 = 1
+			";
+			if ($supplierCode != null && $supplierCode != "") {
+				$sql += " and SUPPLIER_CODE = ? ";
+				$param[] = $customerCode;
+			}
+			$sql += "
+				)
+			";
 		}
+		$sql += "
+			order by
+				SORT_ORDER
+		";
 
-		$query->select('SUPPLIER_CODE', 'ITEM_CODE');
-		$query->distinct();
-		$query->orderBy('SUPPLIER_CODE');
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
 
-		// 検索結果
-		$itemsSupplier = $query->get();
 		// 返却
-		return $itemsSupplier;
+		if (0 < count($record)) { $result = $record[0]["NAME"]; }
+		return $result;
 	}
+	//---------------------------------------------------------------------
+	// 商品名以外のデータが必要な場合はこっち
+	//---------------------------------------------------------------------
+	public function getItemData(Request $request){
 
-	//-------------------------------------------------------------------------
-	// ItemTransfer
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getItemTransfer(Request $request){
+		$sql = "";
+		$param = [];
+		$result = "";
 
-		// 検索条件の組み立て
-		$query = itemsTransfer::query();
-		$query->select('IN_OFFICE_CODE', 'IN_ITEM_CODE', 'OT_OFFICE_CODE', 'OT_ITEM_CODE');
-		$query->distinct();
-		$query->orderBy('IN_OFFICE_CODE');
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code         		= $request->input("code") ?? "0";
+		$hCode            = $request->input("hCode") ?? "0";
+		$customerCode     = $request->input("customerCode");
+		$deliveryCode     = $request->input("deliveryCode");
+		$supplierCode     = $request->input("supplierCode");
 
-		// 検索結果
-		$itemsTransfer = $query->get();
+		$sql = "
+			select
+				CODE,
+				NAME,
+				HNAME,
+				SORT_ORDER,
+				WEIGHT,
+				QTY_PER_CTN,
+				UNIT,
+				RATE1,
+				RATE2,
+				RATE3,
+				GCODE1,
+				GCODE2,
+				GCODE3,
+				GNAME1,
+				GNAME2,
+				GNAME3,
+				STEPS_CODE1,
+				STEPS_CODE2,
+				STEPS_CODE3,
+				STEPS1,
+				STEPS2,
+				STEPS3,
+				HEIGHT,
+				MARGIN,
+				IMAGE,
+				ON_NOT_STOCK,
+				ON_PRINT,
+				ON_NOT_USE,
+				ON_IMAGE,
+				ON_KEEP,
+				COMPANY_CODE,
+				COMPANY_NAME,
+				WAREHOUSE_CODE,
+				WAREHOUSE_NAME
+				SUPPLIER,
+				PROPER,
+				ORDER_FLG,
+				MEMO
+			from
+				ITEMS
+			where
+				1 = 1
+			and CODE = ?
+		";
+		$param[] = $code;
+
+		// 売上or仕入で分岐する。
+		if ($hCode == 1 || $hCode == 4) {
+			// 得意先別納入先別マスタ
+			$sql = $sql . "
+				and CODE in (
+					select distinct
+						ITEM_CODE
+					from
+						ITEMS_CUSTOMER
+					where
+						1 = 1
+			";
+			if ($customerCode != null && $customerCode != "") {
+				$sql = $sql . " and CUSTOMER_CODE = ? ";
+				$param[] = $customerCode;
+			}
+			if ($deliveryCode != null && $deliveryCode != "") {
+				$sql = $sql . " and (DELIVERY_CODE = ? or DELIVERY_CODE is null) ";
+				$param[] = $deliveryCode;
+			}
+			$sql = $sql . "
+				)
+			";
+		} else if ($hCode != 1 && $hCode != 4) {
+			// 仕入先別マスタ
+			$sql = $sql . "
+				and CODE in (
+					select distinct
+						ITEM_CODE
+					from
+						ITEMS_SUPPLIER
+					where
+						1 = 1
+			";
+			if ($supplierCode != null && $supplierCode != "") {
+				$sql = $sql . " and SUPPLIER_CODE = ? ";
+				$param[] = $supplierCode;
+			}
+			$sql = $sql . "
+				)
+			";
+		}
+		$sql = $sql . "
+			order by
+				SORT_ORDER
+		";
+
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
 		// 返却
-		return $itemsTransfer;
-	}
-
-	//-------------------------------------------------------------------------
-	// Remarks
-	// 
-	// 
-	//-------------------------------------------------------------------------
-	public function getRemarks(Request $request){
-
-		// 検索条件の組み立て
-		$query = remarks::query();
-
-		// 並び順
-		$query->orderBy('class', 'asc');
-		$query->orderBy('code', 'asc');
-
-		// 検索結果
-		// $remarks = ProjectCommon::getRelation('\App\Models\remarks', $query)->get();
-		$remarks = $query->get();
-
-		// 返却
-		return $remarks;
+		if (0 < count($record)) { $result = $record[0]; }
+		return $result;
 	}
 
 	//-------------------------------------------------------------------------
 	// getOffices
-	// 
+	// 営業所
 	// 
 	//-------------------------------------------------------------------------
 	public function getOffices(Request $request){
@@ -718,18 +773,337 @@ class MasterController extends Controller
 		// 返却
 		return $offices;
 	}
+	public function getOfficeName(Request $request){
 
-	public function getDetail(Request $request){
-		$user = $this->getUsers($request);
-		$hcodesD = $this->getHCodesD($request);
-		$places = $this->getPlaces($request);
-		$remarks = $this->getRemarks($request);
-		$result = array(
-			"users"         => $user,
-			"hcodesD"       => $hcodesD,
-			"places"        => $places,
-			"remarks"       => $remarks,
-		);
+		$sql = "";
+		$param = [];
+		$result = "";
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code     = $request->input("code") ?? "0";
+
+		$sql = "
+			select
+				NAME
+			from
+				OFFICES
+			where
+				1 = 1
+			and CODE
+			order by
+				CODE
+		";
+
+		// コード
+		$param[] = $code;
+
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
+		// 返却
+		if (0 < count($record)) { $result = $record[0]["NAME"]; }
+		return $result;
+	}
+
+	//-------------------------------------------------------------------------
+	// Places
+	// 置場
+	// 
+	//-------------------------------------------------------------------------
+	public function getPlaces(Request $request){
+
+		// 検索条件の組み立て
+		$query = places::query();
+
+		$query->where('ON1', 1);
+
+		// 並び順
+		$query->orderBy('CODE', 'asc');
+
+		// 検索結果
+		// $customers = ProjectCommon::getRelation('\App\Models\places', $query)->get();
+		$places = $query->get();
+
+		// 返却
+		return $places;
+	}
+	public function getPlaceName(Request $request){
+
+		$sql = "";
+		$param = [];
+		$result = "";
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code         		= $request->input("code") ?? "0";
+
+		$sql = "
+			select
+				NAME
+			from
+				PLACES
+			where
+				1 = 1
+			and CODE = ?
+			order by
+				CODE
+		";
+
+		// コード
+		$param[] = $code;
+
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
+		// 返却
+		if (0 < count($record)) { $result = $record[0]["NAME"]; }
+		return $result;
+	}
+
+	//-------------------------------------------------------------------------
+	// Remarks
+	// 備考
+	// 
+	//-------------------------------------------------------------------------
+	public function getRemarks(Request $request){
+
+		// 検索条件の組み立て
+		$query = remarks::query();
+
+		// 並び順
+		$query->orderBy('class', 'asc');
+		$query->orderBy('code', 'asc');
+
+		// 検索結果
+		// $remarks = ProjectCommon::getRelation('\App\Models\remarks', $query)->get();
+		$remarks = $query->get();
+
+		// 返却
+		return $remarks;
+	}
+
+	//-------------------------------------------------------------------------
+	// Suppliers
+	// 仕入先
+	// 
+	//-------------------------------------------------------------------------
+	public function getSuppliers(Request $request){
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$searchOfficeCode       = $request->input("searchOfficeCode");
+		$searchSupplierKana     = $request->input("searchSupplierKana");
+		$searchSupplierName     = $request->input("searchSupplierName");
+		$notLike                = $request->input("notLike");
+
+		
+		// 検索条件の組み立て
+		$query = suppliers::query();
+
+		$query->where('ON_NOT_USE', 0);
+
+		// 営業所コード
+		if ($searchOfficeCode != null && $searchOfficeCode != ""){
+			if ($notLike == 0) {
+				$query->where('CODE', 'LIKE', $searchOfficeCode . '%');
+			} else {
+				$query->where('CODE', 'NOT LIKE', $searchOfficeCode . '%');
+			}
+		}
+
+		// カナ
+		if ($searchSupplierKana != null && $searchSupplierKana != ""){
+			$query->where('NAME1', 'LIKE', '%' . mb_convert_kana($searchSupplierKana, "kvhas") . '%');
+		}
+
+		// 名
+		if ($searchSupplierName != null && $searchSupplierName != ""){
+			$query->where('NAME', 'LIKE', '%' . $searchSupplierName . '%');
+		}
+
+		// 並び順
+		$query->orderBy('CODE', 'asc');
+
+		// 検索結果
+		// $customers = ProjectCommon::getRelation('\App\Models\suppliers', $query)->get();
+		$suppliers = $query->select('CODE','NAME','NAME1')->get();
+
+		// 返却
+		return $suppliers;
+	}
+	public function getSupplierName(Request $request){
+
+		$sql = "";
+		$param = [];
+		$result = "";
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code         = $request->input("code") ?? "0";
+
+		$sql = "
+			select
+				NAME
+			from
+				SUPPLIERS
+			where
+				1 = 1
+			and CODE = ?
+			order by
+				CODE
+		";
+
+		// コード
+		$param[] = $code;
+
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
+		// 返却
+		if (0 < count($record)) { $result = $record[0]["NAME"]; }
+		return $result;
+	}
+
+	//-------------------------------------------------------------------------
+	// Truckers
+	// 運送会社
+	// 
+	//-------------------------------------------------------------------------
+	public function getTruckerName(Request $request){
+
+		$sql = "";
+		$param = [];
+		$result = "";
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code         = $request->input("code") ?? "0";
+		$companyCode	= $request->input("companyCode");
+
+		$sql = "
+			select
+				NAME
+			from
+				TRUCKERS
+			where
+				1 = 1
+			and CODE = ?
+		";
+		// コード
+		$param[] = $code;
+	
+		if ($companyCode != null && $companyCode != "") {
+			$sql = $sql . " and COMPANY_CODE = ? ";
+			$param[] = $companyCode;
+		}
+
+		$sql = $sql . "
+			order by
+				CODE
+		";
+		
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
+		// 返却
+		if (0 < count($record)) { $result = $record[0]["NAME"]; }
+		return $result;
+	}
+
+	//-------------------------------------------------------------------------
+	// Users
+	// 運転手+受注者
+	// 
+	//-------------------------------------------------------------------------
+	public function getUsers(Request $request){
+		// return users::whereNotNull('CODE')->orderBy('CODE')->get();
+		return users::whereNotNull('CODE')->orderBy('CODE')->select('CODE', 'NAME')->get();
+	}
+
+	//-------------------------------------------------------------------------
+	// Warehouses
+	// 倉庫
+	// 
+	//-------------------------------------------------------------------------
+	public function getWarehouses(Request $request){
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$searchOfficeCode       = $request->input("searchOfficeCode");
+		$searchWarehouseKana    = $request->input("searchWarehouseKana");
+		$searchWarehouseName    = $request->input("searchWarehouseName");
+		$notLike                = $request->input("notLike");
+
+		// 検索条件の組み立て
+		$query = warehouses::query();
+
+		// 営業所コード
+		if ($searchOfficeCode != null && $searchOfficeCode != ""){
+			if ($notLike == 0) {
+				$query->where('CODE', 'LIKE', $searchOfficeCode . '%');
+			} else {
+				$query->where('CODE', 'NOT LIKE', $searchOfficeCode . '%');
+			}
+		}
+
+		// カナ
+		if ($searchWarehouseKana != null && $searchWarehouseKana != ""){
+			$query->where('NAME1', 'LIKE', '%' . mb_convert_kana($searchWarehouseKana, "kvhas") . '%');
+		}
+
+		// 名
+		if ($searchWarehouseName != null && $searchWarehouseName != ""){
+			$query->where('NAME', 'LIKE', '%' . $searchWarehouseName . '%');
+		}
+
+		// 並び順
+		$query->orderBy('CODE', 'asc');
+
+		// 検索結果
+		// $customers = ProjectCommon::getRelation('\App\Models\warehouses', $query)->get();
+		$warehouses = $query->select('CODE','NAME','NAME1')->get();
+
+		// 返却
+		return $warehouses;
+	}
+	public function getWarehouseName(Request $request){
+
+		$sql = "";
+		$param = [];
+		$result = "";
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$code         = $request->input("code") ?? "0";
+
+		$sql = "
+			select
+				NAME
+			from
+				WAREHOUSES
+			where
+				1 = 1
+			and CODE = ?
+			order by
+				CODE
+		";
+
+		// コード
+		$param[] = $code;
+
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
+		// 返却
+		if (0 < count($record)) { $result = $record[0]["NAME"]; }
 		return $result;
 	}
 }
