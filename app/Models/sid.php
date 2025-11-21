@@ -15,8 +15,8 @@ class sid extends Model
 
     protected $casts = [
         'SIH_ID' => 'int',
+        // 'ORDER_NO' => 'string',
         'RNO' => 'int',
-        'ORDER_NO' => 'string',
         'HCODE' => 'string',
         'LA' => 'int',
         'ITEM_CODE' => 'string',

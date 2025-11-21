@@ -26,7 +26,7 @@
             <div class="value" >
               <label v-for="(hcodeH, index) of this.HCODESH" :key="index">
                 <br v-if="index!=0 && (index % 3)==0" />
-                <input type="radio" :id="'hcodeH_'+index" name="r2" :value="hcodeH.CODE" v-model="HCODE" :ref="'inputShipping_hcodeH_' + index" @keyup.enter="moveToNextField('inputShipping_hcodeH_' + index)">{{ hcodeH.NAME }}
+                <input type="radio" :id="'hcodeH_'+index" name="r2" :value="hcodeH.CODE" v-model="HCODE" :ref="'inputShipping_hcodeH_' + index" @keyup.enter="moveToNextField('inputShipping_hcodeH_' + index)" v-on:click="changeOrderNo(hcodeH.CODE)" >{{ hcodeH.NAME }}
               </label>
             </div>
           </div>
@@ -80,6 +80,9 @@ export default {
       SHIP_DATE: "",
       HCODESH: [],
       nextFields: [],
+
+      ORDER_NO_: "",
+      ADJUST_NO_: "",
     }
   },
   methods: {
@@ -142,6 +145,20 @@ export default {
         }
       }
     },
+
+    //---------------------------------------------------------------------
+    // 受注No表示切替え
+    //---------------------------------------------------------------------
+    changeOrderNo(code) {
+      // 選択している取区に応じて表示する受注Noを切り替える。
+      if (code != '7') {
+        // 通常
+        this.ORDER_NO = this.ORDER_NO_;
+      } else {
+        // 在庫調整用
+        this.ORDER_NO = this.ADJUST_NO_;
+      }
+    },
   },
 
   //-------------------------------------------------------------------------
@@ -158,12 +175,27 @@ export default {
       this.HCODESH = response.data; 
     });
 
+    // 受注NO(通常)
     await axios.get("/api/orderNo", {})
     .then(response => {
-      this.ORDER_NO = response.data;
+      this.ORDER_NO_ = response.data;
+      // 初期表示として通常を表示する。
+      this.ORDER_NO = this.ORDER_NO_;
+    });
+
+    // 受注NO(在庫調整用)
+    await axios.get("/api/adjustNo", {})
+    .then(response => {
+      this.ADJUST_NO_ = response.data;
     });
 
     if (this.hCode != null && this.hCode != "") { this.HCODE = this.hCode; }
+
+    if (this.hCode!=7) {
+      this.ORDER_NO = this.ORDER_NO_;
+    } else {
+      this.ORDER_NO = this.ADJUST_NO_;
+    }
 
     // Enter移動の設定をする
     this.setNextField();

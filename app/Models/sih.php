@@ -11,6 +11,7 @@ class sih extends Model
 
     protected $table            = 'SIH';
     protected $primaryKey       = 'SIH_ID';
+    // protected $primaryKey       = 'ORDER_NO';
     public $incrementing        = false;
     public $keyType             = "string";
     public $timestamps          = false;

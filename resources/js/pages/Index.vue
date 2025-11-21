@@ -167,6 +167,7 @@
               <!-- 受注No -->
               <td class="center" style="height: 46px;text-decoration: underline;color: #0000ff;">
                 <div title="編集画面へ" style="cursor:pointer;" v-on:click="detail(sihRecord.SIH_ID)">{{ sihRecord.ORDER_NO }}</div>
+                <!-- <div title="編集画面へ" style="cursor:pointer;" v-on:click="detail(sihRecord.ORDER_NO)">{{ sihRecord.ORDER_NO }}</div> -->
               </td>
               <!-- 取区 -->
               <td class="center">
@@ -188,19 +189,26 @@
               <td>
                 {{ sihRecord.DELIVERY_CODE }}<br />{{ sihRecord.DELIVERY_NAME }}
               </td>
+
               <!-- 運転手 -->
-              <td v-bind:class="{nothing: sihRecord.DRIVER_CODE=='' || sihRecord.DRIVER_CODE==null}">
-                <input type="text" autocomplete="off" size="4" :value="sihRecord.DRIVER_CODE | upperCase" @input.lazy="sihRecord.DRIVER_CODE = ($event.target.value).toUpperCase()" v-on:keyup="driverC2N(index)" v-on:blur="driverBlur(index);" :ref="'driver_' + index" @keyup.enter="moveToNextField('driver_' + index)">
-          <!-- <input type="text" autocomplete="off" size="16" list="items_rel" :value="sidRecord.ITEM_CODE | upperCase" @input.lazy="sidRecord.ITEM_CODE = ($event.target.value).toUpperCase()" v-on:keyup="itemC2N(index)" v-on:blur="itemBlur(index);" :ref="'itemCode_' + index" @keyup.enter="moveToNextField('itemCode_' + index)"> -->
-                <font-awesome-icon icon="times" v-on:click="sihRecord.DRIVER_CODE='';driverBlur(index);" style="cursor:pointer;" />
-                <font-awesome-icon icon="search" style="cursor:pointer;" v-on:click="showDialog.DriverSearchIndex=index;opneDialog('DriverSearch')" />
-                <br />
-                {{ sihRecord.DRIVER_NAME }}
+              <td v-bind:class="{nothing: sihRecord.HCODE!='7' && (sihRecord.DRIVER_CODE=='' || sihRecord.DRIVER_CODE==null)}">
+                <div v-if="sihRecord.HCODE!='7'">
+                  <input type="text" autocomplete="off" size="4" :value="sihRecord.DRIVER_CODE | upperCase" @input.lazy="sihRecord.DRIVER_CODE = ($event.target.value).toUpperCase()" v-on:keyup="driverC2N(index)" v-on:blur="driverBlur(index);" :ref="'driver_' + index" @keyup.enter="moveToNextField('driver_' + index)">
+                  <!-- <input type="text" autocomplete="off" size="16" list="items_rel" :value="sidRecord.ITEM_CODE | upperCase" @input.lazy="sidRecord.ITEM_CODE = ($event.target.value).toUpperCase()" v-on:keyup="itemC2N(index)" v-on:blur="itemBlur(index);" :ref="'itemCode_' + index" @keyup.enter="moveToNextField('itemCode_' + index)"> -->
+                  <font-awesome-icon icon="times" v-on:click="sihRecord.DRIVER_CODE='';driverBlur(index);" style="cursor:pointer;" />
+                  <font-awesome-icon icon="search" style="cursor:pointer;" v-on:click="showDialog.DriverSearchIndex=index;opneDialog('DriverSearch')" />
+                  <br />
+                  {{ sihRecord.DRIVER_NAME }}
+                </div>
               </td>
+
               <!-- 便区分 -->
-              <td v-bind:class="{nothing: sihRecord.FLIGHTS=='' || sihRecord.FLIGHTS==null}">
-                <input type="text" autocomplete="off" :ref="'flights_' + index" size="1" v-model="sihRecord.FLIGHTS" @keyup.enter="moveToNextField('flights_' + index)">
+              <td v-bind:class="{nothing: sihRecord.HCODE!='7' && (sihRecord.FLIGHTS=='' || sihRecord.FLIGHTS==null)}">
+                <div v-if="sihRecord.HCODE!='7'">
+                  <input type="text" autocomplete="off" :ref="'flights_' + index" size="1" v-model="sihRecord.FLIGHTS" @keyup.enter="moveToNextField('flights_' + index)">
+                </div>
               </td>
+
               <!-- 仕入先 -->
               <td>
                 {{ sihRecord.SUPPLIER_CODE }}<br />{{ sihRecord.SUPPLIER_NAME }}
@@ -246,7 +254,9 @@
               </td>
               <!-- 更新 -->
               <td class="center">
-                <button type="button" ref="update" v-on:click="update(sihRecord)">更新</button>
+                <div v-if="sihRecord.HCODE!='7'">
+                  <button type="button" ref="update" v-on:click="update(sihRecord)">更新</button>
+                </div>
               </td>
             </tr>
           </tbody>

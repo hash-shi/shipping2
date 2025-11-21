@@ -61,8 +61,27 @@ class ShippingController extends ValidateDefinitionsBase {
 			'sidRecords.*.QTY_PER_CTN'     => ['required_with:sidRecords.*.ITEM_CODE'],
 			'sidRecords.*.QTY_CTN'         => ['required_with:sidRecords.*.ITEM_CODE'],
 		],
+		// 在庫調整用
+		"susp_"  => [
+			'sihRecord.ORDER_NO'           => ['required'],
+			'sihRecord.SHIP_DATE'          => ['required'],
+			'sihRecord.DELIVERY_CODE'      => ['nullable', 'exists:warehouses,CODE'],
+			'sidRecords.*.HCODE'           => ['required_with:sidRecords.*.ITEM_CODE', 'nullable', 'exists:hcodesD,CODE'],
+			'sidRecords.*.ITEM_CODE'       => ['required_with:sidRecords.*.HCODE','required_with:sidRecords.*.QTY_PER_CTN','required_with:sidRecords.*.QTY_CTN',],
+			'sidRecords.*.QTY_PER_CTN'     => ['required_with:sidRecords.*.ITEM_CODE'],
+			'sidRecords.*.QTY_CTN'         => ['required_with:sidRecords.*.ITEM_CODE'],
+		],
+		// 在庫調整用
+		"conf_"  => [
+			'sihRecord.ORDER_NO'           => ['required'],
+			'sihRecord.SHIP_DATE'          => ['required'],
+			'sihRecord.DELIVERY_CODE'      => ['nullable', 'exists:warehouses,CODE'],
+			'sidRecords.*.HCODE'           => ['required_with:sidRecords.*.ITEM_CODE', 'nullable', 'exists:hcodesD,CODE'],
+			'sidRecords.*.ITEM_CODE'       => ['required_with:sidRecords.*.HCODE','required_with:sidRecords.*.QTY_PER_CTN','required_with:sidRecords.*.QTY_CTN',],
+			'sidRecords.*.QTY_PER_CTN'     => ['required_with:sidRecords.*.ITEM_CODE'],
+			'sidRecords.*.QTY_CTN'         => ['required_with:sidRecords.*.ITEM_CODE'],
+		],
 	);
-
 
 	//-----------------------------------------------------
 	// 入力値チェックのメッセージ定義
@@ -121,6 +140,31 @@ class ShippingController extends ValidateDefinitionsBase {
 		$rules  = $this->make($this->rules, ["basic", $action]);
 
 		// 独自チェック
+		// if ($action == "exis") {
+		// 	$this->ORDER_NO = $request->input('ORDER_NO');
+		// 	$rules  = $this->add($rules, ['ORDER_NO' => function($attribute, $value, $fail) {
+		// 		// exists = 存在して入ればtrue はあるが not existsがないので手組する。
+		// 		$ORDER_NO = sprintf('%06d', $this->ORDER_NO);
+		// 		if (0 < sih::where('ORDER_NO', $ORDER_NO)->count()) {
+		// 			$fail(':attribute' . ':' . $ORDER_NO . 'が存在しています。');
+		// 		}
+		// 	}]);
+		// }
+
+		// if ($action == "susp" || $action == "conf" || $action == "comp") {
+		// 	$isNew = $request->input('isNew');
+		// 	if ($isNew) {
+		// 		$this->sihRecord = $request->input('sihRecord');
+		// 		$rules  = $this->add($rules, ['sihRecord.ORDER_NO' => function($attribute, $value, $fail) {
+		// 			// exists = 存在して入ればtrue はあるが not existsがないので手組する。
+		// 			$ORDER_NO = sprintf('%06d', $this->sihRecord["ORDER_NO"]);
+		// 			if (0 < sih::where('ORDER_NO', $ORDER_NO)->count()) {
+		// 				$fail(':attribute' . ':' . $ORDER_NO . 'が存在しています。');
+		// 			}
+		// 		}]);
+		// 	}
+		// }
+
 		if ($action == "susp" || $action == "conf") {
 			// 納/倉は条件によって参照テーブルが変わる為、独自チェック
 			$this->sihRecord = $request->input('sihRecord');

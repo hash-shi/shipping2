@@ -10,6 +10,7 @@ const routes = [
     { path: '/sso',                      name: 'SSO',            component: () => import('./pages/SSO.vue')},
     { path: '/',                         name: 'Index',          component: () => import('./pages/Index.vue') },
     { path: '/detail/:sihId'  ,          name: 'Detail',         component: () => import('./pages/Detail.vue') },
+    // { path: '/detail/:orderNo',          name: 'Detail',         component: () => import('./pages/Detail.vue') },
     { path: '/qr',                       name: 'QR',             component: () => import('./pages/QR.vue')},
 ]
 

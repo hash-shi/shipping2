@@ -136,126 +136,152 @@
   </div>
   <br />
 
-  <div class="tv">
-    <div class="title">相手営業所</div>
-    <div class="value" v-if="sihRecord.HCODE==4 || sihRecord.HCODE==5 || sihRecord.HCODE==6">
-    <input type="text" autocomplete="off" size="6" list="offices" id="officesOtherCode" v-model="sihRecord.OFFICE_OTHER_CODE" v-on:keyup="officeOtherC2N()" v-on:blur="officeOtherBlur()" :ref="'officesOtherCode'" @keyup.enter="moveToNextField('officesOtherCode')">
-    <font-awesome-icon icon="times" v-on:click="sihRecord.OFFICE_OTHER_CODE='';officeOtherC2N();officeOtherBlur();" style="cursor:pointer;" />
-    <font-awesome-icon icon="search" v-on:click="opneDialog('OfficeSearch')" style="cursor:pointer;" />
-    <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.OFFICE_OTHER_NAME">
+  <!-- 融通の場合のみ表示 -->
+  <div v-if="sihRecord.HCODE==4 || sihRecord.HCODE==5 || sihRecord.HCODE==6">
+    <div class="tv">
+      <div class="title">相手営業所</div>
+      <div class="value">
+        <input type="text" autocomplete="off" size="6" list="offices" id="officesOtherCode" v-model="sihRecord.OFFICE_OTHER_CODE" v-on:keyup="officeOtherC2N()" v-on:blur="officeOtherBlur()" :ref="'officesOtherCode'" @keyup.enter="moveToNextField('officesOtherCode')">
+        <font-awesome-icon icon="times" v-on:click="sihRecord.OFFICE_OTHER_CODE='';officeOtherC2N();officeOtherBlur();" style="cursor:pointer;" />
+        <font-awesome-icon icon="search" v-on:click="opneDialog('OfficeSearch')" style="cursor:pointer;" />
+        <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.OFFICE_OTHER_NAME">
+      </div>
     </div>
-  </div>
-  <br />
-
-  <div class="tv">
-    <div class="title" v-on:mouseover="showInformation" v-on:mouseout="hideInformation">得意先
-    <div class="information">得意先を指定してください。</div>
-    </div>
-    <!-- 売上の場合のみ表示 -->
-    <div class="value"  v-if="sihRecord.HCODE==1 || sihRecord.HCODE==4">
-    <input type="text" autocomplete="off" size="6" list="customers" id="customerCode" v-model="sihRecord.CUSTOMER_CODE" v-on:keyup="customerC2N()" v-on:blur="customerBlur()" :ref="'customerCode'" @keyup.enter="moveToNextField('customerCode')">
-    <font-awesome-icon icon="times" v-on:click="sihRecord.CUSTOMER_CODE='';customerC2N();customerBlur();" style="cursor:pointer;" />
-    <font-awesome-icon icon="search" v-on:click="opneDialog('CustomerSearch')" style="cursor:pointer;" />
-    <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.CUSTOMER_NAME">
-    </div>
-  </div>
-  <br />
-
-  <div class="tv">
-    <div class="title" v-on:mouseover="showInformation" v-on:mouseout="hideInformation">納／倉
-    <div class="information">納入先を指定してください。<br>（仕入の時は入荷する倉庫を指定）</div>
-    </div>
-
-    <!-- 売上の場合は納入先を表示 -->
-    <div class="value" v-if="sihRecord.HCODE==1 || sihRecord.HCODE==4">
-    <input type="text" autocomplete="off" size="6" list="delivery_destinations" id="deliveryCode" v-model="sihRecord.DELIVERY_CODE" v-on:keyup="deliveryC2N()" v-on:blur="deliveryBlur()" :ref="'deliveryCodeDelivery'" @keyup.enter="moveToNextField('deliveryCodeDelivery')">
-    <font-awesome-icon icon="times" v-on:click="sihRecord.DELIVERY_CODE='';deliveryC2N();deliveryBlur();" style="cursor:pointer;" />
-    <font-awesome-icon icon="search" v-on:click="opneDialog('DeliverySearchDelivery')" style="cursor:pointer;" />
-    <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.DELIVERY_NAME">
-    </div>
-
-    <!-- 仕入と移動は場合は倉庫を表示 -->
-    <div class="value" v-if="sihRecord.HCODE!=1 && sihRecord.HCODE!=4 ">
-    <input type="text" autocomplete="off" size="6" list="delivery_destinations" id="deliveryCode" v-model="sihRecord.DELIVERY_CODE" v-on:keyup="deliveryC2N()" v-on:blur="deliveryBlur()" :ref="'deliveryCodeWarehouse'" @keyup.enter="moveToNextField('deliveryCodeWarehouse')">
-    <font-awesome-icon icon="times" v-on:click="sihRecord.DELIVERY_CODE='';deliveryC2N();deliveryBlur();" style="cursor:pointer;" />
-    <font-awesome-icon icon="search" v-on:click="opneDialog('WarehouseSearchDelivery')" style="cursor:pointer;" />
-    <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.DELIVERY_NAME">
-    </div>
+    <br />
   </div>
 
-  <br />
-
-  <div class="tv">
-    <div class="title" v-on:mouseover="showInformation" v-on:mouseout="hideInformation">仕入先
-    <div class="information">仕入先を指定してください。</div>
+  <!-- 売上の場合のみ表示 -->
+  <div v-if="sihRecord.HCODE==1 || sihRecord.HCODE==4">
+    <div class="tv">
+      <div class="title" v-on:mouseover="showInformation" v-on:mouseout="hideInformation">得意先
+        <div class="information">得意先を指定してください。</div>
+      </div>
+      <div class="value">
+        <input type="text" autocomplete="off" size="6" list="customers" id="customerCode" v-model="sihRecord.CUSTOMER_CODE" v-on:keyup="customerC2N()" v-on:blur="customerBlur()" :ref="'customerCode'" @keyup.enter="moveToNextField('customerCode')">
+        <font-awesome-icon icon="times" v-on:click="sihRecord.CUSTOMER_CODE='';customerC2N();customerBlur();" style="cursor:pointer;" />
+        <font-awesome-icon icon="search" v-on:click="opneDialog('CustomerSearch')" style="cursor:pointer;" />
+        <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.CUSTOMER_NAME">
+      </div>
     </div>
-    <div class="value">
-    <input type="text" autocomplete="off" size="6" list="suppliers" id="supplierCode" v-model="sihRecord.SUPPLIER_CODE" v-on:keyup="supplierC2N()" v-on:blur="supplierBlur()" :ref="'supplierCode'" @keyup.enter="moveToNextField('supplierCode')">
-    <font-awesome-icon icon="times" v-on:click="sihRecord.SUPPLIER_CODE='';supplierC2N();supplierBlur();" style="cursor:pointer;" />
-    <font-awesome-icon icon="search" v-on:click="opneDialog('SupplierSearch')" style="cursor:pointer;" />
-    <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.SUPPLIER_NAME">
-    </div>
-  </div>
-
-  <br />
-
-  <div class="tv">
-    <div class="title" v-on:mouseover="showInformation" v-on:mouseout="hideInformation">倉庫
-    <div class="information">出荷倉庫を指定してください。<br>（仕入の時は仕入元の倉庫）</div>
-    </div>
-    <div class="value">
-    <input type="text" autocomplete="off" size="6" list="warehouses" id="warehouseCode" v-model="sihRecord.WAREHOUSE_CODE" v-on:keyup="warehouseC2N()" v-on:blur="warehouseBlur()" :ref="'warehouseCode'" @keyup.enter="moveToNextField('warehouseCode')">
-    <font-awesome-icon icon="times" v-on:click="sihRecord.WAREHOUSE_CODE='';warehouseC2N();warehouseBlur();" style="cursor:pointer;" />
-    <font-awesome-icon icon="search" v-on:click="opneDialog('WarehouseSearch')" style="cursor:pointer;" />
-    <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.WAREHOUSE_NAME">
-    </div>
+    <br />
   </div>
 
-  <br />
-
-  <div class="tv">
-    <div class="title">運転手</div>
-    <div class="value">
-    <input type="text" autocomplete="off" size="6" list="drivers" id="driverCode" v-model="sihRecord.DRIVER_CODE" v-on:keyup="driverC2N()" v-on:blur="driverBlur()" :ref="'driverCode'" @keyup.enter="moveToNextField('driverCode')">
-    <font-awesome-icon icon="times" v-on:click="sihRecord.DRIVER_CODE='';driverC2N();driverBlur();" style="cursor:pointer;" />
-    <font-awesome-icon icon="search" v-on:click="opneDialog('DriverSearch')" style="cursor:pointer;" />
-    <input type="text" autocomplete="off" disabled v-model="sihRecord.DRIVER_NAME">
+  <!-- 調整以外の場合のみ表示 -->
+  <div v-if="sihRecord.HCODE!=7">
+    <div class="tv">
+      <div class="title" v-on:mouseover="showInformation" v-on:mouseout="hideInformation">納／倉
+      <div class="information">納入先を指定してください。<br>（仕入の時は入荷する倉庫を指定）</div>
+      </div>
+      <!-- 売上の場合は納入先を表示 -->
+      <div class="value" v-if="sihRecord.HCODE==1 || sihRecord.HCODE==4">
+        <input type="text" autocomplete="off" size="6" list="delivery_destinations" id="deliveryCode" v-model="sihRecord.DELIVERY_CODE" v-on:keyup="deliveryC2N()" v-on:blur="deliveryBlur()" :ref="'deliveryCodeDelivery'" @keyup.enter="moveToNextField('deliveryCodeDelivery')">
+        <font-awesome-icon icon="times" v-on:click="sihRecord.DELIVERY_CODE='';deliveryC2N();deliveryBlur();" style="cursor:pointer;" />
+        <font-awesome-icon icon="search" v-on:click="opneDialog('DeliverySearchDelivery')" style="cursor:pointer;" />
+        <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.DELIVERY_NAME">
+      </div>
+      <!-- 仕入と移動は場合は倉庫を表示 -->
+      <div class="value" v-if="sihRecord.HCODE!=1 && sihRecord.HCODE!=4 ">
+        <input type="text" autocomplete="off" size="6" list="delivery_destinations" id="deliveryCode" v-model="sihRecord.DELIVERY_CODE" v-on:keyup="deliveryC2N()" v-on:blur="deliveryBlur()" :ref="'deliveryCodeWarehouse'" @keyup.enter="moveToNextField('deliveryCodeWarehouse')">
+        <font-awesome-icon icon="times" v-on:click="sihRecord.DELIVERY_CODE='';deliveryC2N();deliveryBlur();" style="cursor:pointer;" />
+        <font-awesome-icon icon="search" v-on:click="opneDialog('WarehouseSearchDelivery')" style="cursor:pointer;" />
+        <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.DELIVERY_NAME">
+      </div>
     </div>
-  </div>
-  <div class="tv">
-    <div class="title">運送会社</div>
-    <div class="value">
-    <input type="text" autocomplete="off" size="10" disabled v-model="sihRecord.TRUCKER_CODE">
-    <input type="text" autocomplete="off" disabled v-model="sihRecord.TRUCKER_NAME">
-    </div>
-  </div>
-  <div class="tv">
-    <div class="title">便区分</div>
-    <div class="value">
-    <input type="text" autocomplete="off" size="5" v-model="sihRecord.FLIGHTS" :ref="'flights'" @keyup.enter="moveToNextField('flights')">
-    回目
-    </div>
+    <br />
   </div>
 
-  <br />
+  <!-- 調整の場合のみ表示 -->
+  <div v-if="sihRecord.HCODE==7">
+    <div class="tv">
+      <div class="title">倉庫</div>
+      <div class="value">
+        <input type="text" autocomplete="off" size="6" list="delivery_destinations" id="deliveryCode" v-model="sihRecord.DELIVERY_CODE" v-on:keyup="deliveryC2N()" v-on:blur="deliveryBlur()" :ref="'deliveryCodeWarehouse'" @keyup.enter="moveToNextField('deliveryCodeWarehouse')">
+        <font-awesome-icon icon="times" v-on:click="sihRecord.DELIVERY_CODE='';deliveryC2N();deliveryBlur();" style="cursor:pointer;" />
+        <font-awesome-icon icon="search" v-on:click="opneDialog('WarehouseSearchDelivery')" style="cursor:pointer;" />
+        <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.DELIVERY_NAME">
+      </div>
+    </div>
+    <br />
+  </div>
 
-  <div class="tv">
-    <div class="title">運賃</div>
-    <div class="value"><input type="text" autocomplete="off" class="right" size="10" v-model="sihRecord.FEE" v-on:blur="sihRecord.FEE=comma(sihRecord.FEE)" v-on:focus="sihRecord.FEE=delcomma(sihRecord.FEE)" :ref="'fee'" @keyup.enter="moveToNextField('fee')"></div>
+  <!-- 調整以外の場合のみ表示 -->
+  <div v-if="sihRecord.HCODE!=7">
+    <div class="tv">
+      <div class="title" v-on:mouseover="showInformation" v-on:mouseout="hideInformation">仕入先
+        <div class="information">仕入先を指定してください。</div>
+      </div>
+      <div class="value">
+        <input type="text" autocomplete="off" size="6" list="suppliers" id="supplierCode" v-model="sihRecord.SUPPLIER_CODE" v-on:keyup="supplierC2N()" v-on:blur="supplierBlur()" :ref="'supplierCode'" @keyup.enter="moveToNextField('supplierCode')">
+        <font-awesome-icon icon="times" v-on:click="sihRecord.SUPPLIER_CODE='';supplierC2N();supplierBlur();" style="cursor:pointer;" />
+        <font-awesome-icon icon="search" v-on:click="opneDialog('SupplierSearch')" style="cursor:pointer;" />
+        <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.SUPPLIER_NAME">
+      </div>
+    </div>
+    <br />
   </div>
-  <div class="tv">
-    <div class="title">付加</div>
-    <div class="value"><input type="text" autocomplete="off" class="right" size="10" v-model="sihRecord.ADD_FEE" v-on:blur="sihRecord.ADD_FEE=comma(sihRecord.ADD_FEE)" v-on:focus="sihRecord.ADD_FEE=delcomma(sihRecord.ADD_FEE)" :ref="'addFee'" @keyup.enter="moveToNextField('addFee')"></div>
+
+  <!-- 調整以外の場合のみ表示 -->
+  <div v-if="sihRecord.HCODE!=7">
+    <div class="tv">
+      <div class="title" v-on:mouseover="showInformation" v-on:mouseout="hideInformation">倉庫
+        <div class="information">出荷倉庫を指定してください。<br>（仕入の時は仕入元の倉庫）</div>
+      </div>
+      <div class="value">
+        <input type="text" autocomplete="off" size="6" list="warehouses" id="warehouseCode" v-model="sihRecord.WAREHOUSE_CODE" v-on:keyup="warehouseC2N()" v-on:blur="warehouseBlur()" :ref="'warehouseCode'" @keyup.enter="moveToNextField('warehouseCode')">
+        <font-awesome-icon icon="times" v-on:click="sihRecord.WAREHOUSE_CODE='';warehouseC2N();warehouseBlur();" style="cursor:pointer;" />
+        <font-awesome-icon icon="search" v-on:click="opneDialog('WarehouseSearch')" style="cursor:pointer;" />
+        <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.WAREHOUSE_NAME">
+      </div>
+    </div>
+    <br />
   </div>
-  <div class="tv">
-    <div class="title">有料道路代</div>
-    <div class="value"><input type="text" autocomplete="off" class="right" size="10" v-model="sihRecord.HIGHWAY_FEE" v-on:blur="sihRecord.HIGHWAY_FEE=comma(sihRecord.HIGHWAY_FEE)" v-on:focus="sihRecord.HIGHWAY_FEE=delcomma(sihRecord.HIGHWAY_FEE)" :ref="'highwayFee'" @keyup.enter="moveToNextField('highwayFee')"></div>
-  </div>
-  <div class="tv">
-    <div class="title">運賃振替</div>
-    <div class="value">
-    <label><input type="radio" name="radio" value="1" v-model="sihRecord.FEE_CLASS" :ref="'feeClass0'" @keyup.enter="moveToNextField('feeClass0')">他</label>
-    <label><input type="radio" name="radio" value="2" v-model="sihRecord.FEE_CLASS" :ref="'feeClass1'" @keyup.enter="moveToNextField('feeClass1')">自</label>
+
+  <!-- 調整以外の場合のみ表示 -->
+  <div v-if="sihRecord.HCODE!=7">
+    <div class="tv">
+      <div class="title">運転手</div>
+      <div class="value">
+      <input type="text" autocomplete="off" size="6" list="drivers" id="driverCode" v-model="sihRecord.DRIVER_CODE" v-on:keyup="driverC2N()" v-on:blur="driverBlur()" :ref="'driverCode'" @keyup.enter="moveToNextField('driverCode')">
+      <font-awesome-icon icon="times" v-on:click="sihRecord.DRIVER_CODE='';driverC2N();driverBlur();" style="cursor:pointer;" />
+      <font-awesome-icon icon="search" v-on:click="opneDialog('DriverSearch')" style="cursor:pointer;" />
+      <input type="text" autocomplete="off" disabled v-model="sihRecord.DRIVER_NAME">
+      </div>
+    </div>
+    <div class="tv">
+      <div class="title">運送会社</div>
+      <div class="value">
+      <input type="text" autocomplete="off" size="10" disabled v-model="sihRecord.TRUCKER_CODE">
+      <input type="text" autocomplete="off" disabled v-model="sihRecord.TRUCKER_NAME">
+      </div>
+    </div>
+    <div class="tv">
+      <div class="title">便区分</div>
+      <div class="value">
+      <input type="text" autocomplete="off" size="5" v-model="sihRecord.FLIGHTS" :ref="'flights'" @keyup.enter="moveToNextField('flights')">
+      回目
+      </div>
+    </div>
+
+    <br />
+    
+    <div class="tv">
+      <div class="title">運賃</div>
+      <div class="value"><input type="text" autocomplete="off" class="right" size="10" v-model="sihRecord.FEE" v-on:blur="sihRecord.FEE=comma(sihRecord.FEE)" v-on:focus="sihRecord.FEE=delcomma(sihRecord.FEE)" :ref="'fee'" @keyup.enter="moveToNextField('fee')"></div>
+    </div>
+    <div class="tv">
+      <div class="title">付加</div>
+      <div class="value"><input type="text" autocomplete="off" class="right" size="10" v-model="sihRecord.ADD_FEE" v-on:blur="sihRecord.ADD_FEE=comma(sihRecord.ADD_FEE)" v-on:focus="sihRecord.ADD_FEE=delcomma(sihRecord.ADD_FEE)" :ref="'addFee'" @keyup.enter="moveToNextField('addFee')"></div>
+    </div>
+    <div class="tv">
+      <div class="title">有料道路代</div>
+      <div class="value"><input type="text" autocomplete="off" class="right" size="10" v-model="sihRecord.HIGHWAY_FEE" v-on:blur="sihRecord.HIGHWAY_FEE=comma(sihRecord.HIGHWAY_FEE)" v-on:focus="sihRecord.HIGHWAY_FEE=delcomma(sihRecord.HIGHWAY_FEE)" :ref="'highwayFee'" @keyup.enter="moveToNextField('highwayFee')"></div>
+    </div>
+    <div class="tv">
+      <div class="title">運賃振替</div>
+      <div class="value">
+      <label><input type="radio" name="radio" value="1" v-model="sihRecord.FEE_CLASS" :ref="'feeClass0'" @keyup.enter="moveToNextField('feeClass0')">他</label>
+      <label><input type="radio" name="radio" value="2" v-model="sihRecord.FEE_CLASS" :ref="'feeClass1'" @keyup.enter="moveToNextField('feeClass1')">自</label>
+      </div>
     </div>
   </div>
 
@@ -606,8 +632,17 @@ export default {
     // 一時保存
     susp: async function(){
       // IDと受注番号は登録時に最新を取り直す。
+      var process = "";
+      if (this.sihRecord.HCODE!=7) {
+        // 通常
+        process = "/api/shipping/detail/susp";
+      } else {
+        // 在庫調整用
+        process = "/api/shipping/detail/susp_";
+      }
+
       if (confirm("一時保存します。よろしいですか？")) {
-        await axios.post("/api/shipping/detail/susp", {
+        await axios.post(process, {
           'isNew'   : this.isNew,
           'sihRecord' : this.sihRecord,
           'sidRecords': this.sidRecords,
@@ -624,8 +659,17 @@ export default {
 
     // 入力確定
     conf: async function() {
+      var process = "";
+      if (this.sihRecord.HCODE!=7) {
+        // 通常
+        process = "/api/shipping/detail/conf";
+      } else {
+        // 在庫調整用
+        process = "/api/shipping/detail/conf_";
+      }
+
       if (confirm("入力確定をします。よろしいですか？")) {
-        await axios.post("/api/shipping/detail/conf", {
+        await axios.post(process, {
           'isNew'     : this.isNew,
           'sihRecord' : this.sihRecord,
           'sidRecords': this.sidRecords,

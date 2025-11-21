@@ -239,12 +239,12 @@ class ShippingController extends Controller
 		$searchFlights      = $request->input("searchFlights");
 		$searchCustomerCode = $request->input("searchCustomerCode");
 		
-
 		// 検索条件の組み立て
 		$querySih = sih::query();
 		$querySih->from('SIH as S');
 		$querySih->leftJoin('SIH_RESULT as R', function($join) {
 			$join->on('S.SIH_ID', '=', 'R.SIH_ID');
+			// $join->on('S.ORDER_NO', '=', 'R.ORDER_NO');
 		});
 		$querySih->leftJoin('USERS as U', function($join) {
 			$join->on('S.ORDER_USER', '=', 'U.CODE')->orWhere('S.ORDER2_USER', '=', 'U.CODE');
@@ -294,6 +294,7 @@ class ShippingController extends Controller
 		// 並び順
 		$querySih->selectRaw('S.*');
 		$querySih->orderBy('SIH_ID', 'desc');
+		// $querySih->orderBy('ORDER_NO', 'desc');
 
 		// var_dump($querySih->toSql());
 
@@ -308,6 +309,18 @@ class ShippingController extends Controller
 			"sihRecords" => $sihRecords
 		);
 		return $result;
+	}
+
+	//-------------------------------------------------------------------------
+	// レコードの存在確認
+	// 
+	// 
+	//-------------------------------------------------------------------------
+	public function exis(Request $request){
+		// 受注Noを取得する
+		$ORDER_NO = $request->input("ORDER_NO");
+		// チェックそのものはvalidat側で行うので、ここでは何もしない。
+		return sprintf('%06d', $ORDER_NO);
 	}
 
 	//-------------------------------------------------------------------------
@@ -360,6 +373,7 @@ class ShippingController extends Controller
 			$isNew = false;
 			// ヘッダー
 			$sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('SIH_ID', $sihId))->first());
+			// $sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('ORDER_NO', $orderNo))->first());
 
 			if ($sihRecord['ORDER_TIME'] != null && $sihRecord['ORDER_TIME'] != "") {
 				$sihRecord['ORDER_TIME'] = mb_substr($sihRecord['ORDER_TIME'], 0, 5);
@@ -370,6 +384,7 @@ class ShippingController extends Controller
 
 			// 明細
 			$sidRecords = ProjectCommon::getRelation('App\Models\sid', sid::where('SIH_ID', $sihId))->get();
+			// $sidRecords = ProjectCommon::getRelation('App\Models\sid', sid::where('ORDER_NO', $orderNo))->get();
 
 			// 明細が8件ない場合、不足分を埋める。※本当はありえない処理にしたい
 			if (count($sidRecords) < 8) {
@@ -378,6 +393,7 @@ class ShippingController extends Controller
 					$sidRecord = null;
 					foreach ($sidColumns as $column) { $sidRecord[$column] = null;}
 					$sidRecord['SIH_ID']  = $sihId;
+					// $sidRecord['ORDER_NO']  = $orderNo;
 					$sidRecord['RNO']  = ($i + 1);
 					$sidRecord['items_rel']  = $items_rel;
 					// 格納
@@ -393,7 +409,8 @@ class ShippingController extends Controller
 			if ($sihIdBase !== "") {
 				// 複写
 				// 基となるレコードに上書き
-				$sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('SIH_ID', $sihIdBase))->first());
+				$sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('SIH_ID', $sihIdBase))->first());				// 基となるレコードに上書き
+				// $sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('ORDER_NO', $orderNoBase))->first());
 
 				// 個別の設定値
 				// $sihRecord['DELIVERY_DATE'] = null;
@@ -451,7 +468,7 @@ class ShippingController extends Controller
 				// 複写
 				// 基となるレコードに上書き
 				$sidRecords = ProjectCommon::getRelation('App\Models\sid', sid::where('SIH_ID', $sihIdBase))->get();
-				
+				// $sidRecords = ProjectCommon::getRelation('App\Models\sid', sid::where('ORDER_NO', $orderNoBase))->get();
 			} else {
 				// 新規
 			}
@@ -469,6 +486,7 @@ class ShippingController extends Controller
 			for ($i = 0; $i < 8; $i++) {
 				// 初期値設定
 				$sidRecords[$i]['SIH_ID']     = $sihId;
+				// $sidRecords[$i]['ORDER_NO']  = $orderNo;
 				$sidRecords[$i]['RNO']        = ($i + 1);
 				$sidRecords[$i]['items_rel']  = $items_rel;
 			}
@@ -494,7 +512,13 @@ class ShippingController extends Controller
 	public function susp(Request $request){
 		return $this->regist($request, 0, 'susp');
 	}
+	public function susp_(Request $request){
+		return $this->regist($request, 0, 'susp');
+	}
 	public function conf(Request $request){
+		return $this->regist($request, 1, 'conf');
+	}
+	public function conf_(Request $request){
 		return $this->regist($request, 1, 'conf');
 	}
 	// public function inst(Request $request){
@@ -590,7 +614,15 @@ class ShippingController extends Controller
 				$sihId = $common->getId($request);
 
 				// 受注番号の取り直しと更新(+1する)
-				$orderNo = $common->updOrderNo($request);
+				// $orderNo = $common->updOrderNo($request);
+				$orderNo = 0;
+				if ($sihRecord['HCODE']!=7) {
+					// 通常
+					$orderNo = $common->updOrderNo($request);
+				} else {
+					// 在庫調整
+					$orderNo = $common->updAdjustNo($request);
+				}
 
 				// 登録
 				$sihRecord['SIH_ID'] = $sihId;
@@ -723,9 +755,11 @@ class ShippingController extends Controller
 
 		// ヘッダーの取得
 		$sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('SIH_ID', $sihId))->first());
+		// $sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('ORDER_NO', $orderNo))->first());
 
 		// 明細の取得
 		$sidRecords = ProjectCommon::syncRelation('\App\Models\sid', ProjectCommon::getRelation('App\Models\sid', sid::where('SIH_ID', $sihId))->get());
+		// $sidRecords = ProjectCommon::syncRelation('\App\Models\sid', ProjectCommon::getRelation('App\Models\sid', sid::where('ORDER_NO', $orderNo))->get());
 
 		//日付系のフォーマット修正
 		$orderDate      = $sihRecord['ORDER_DATE'] != null ? date('Y-m-d', strtotime($sihRecord['ORDER_DATE'])) : '';          // 受注日
@@ -786,38 +820,98 @@ class ShippingController extends Controller
 				$html_data = preg_replace('/_deliveryCircleDis_/',  'none',     $html_data);
 		}
 
-		$html_data = preg_replace('/_customerCode_/',   mb_substr($sihRecord['CUSTOMER_CODE'], 3, 4),                               $html_data);
-		$html_data = preg_replace('/_customerName_/',   $sihRecord['CUSTOMER_NAME'],   $html_data);
-		$html_data = preg_replace('/_deliveryCode_/',   mb_substr($sihRecord['DELIVERY_CODE'], 3, 4),                               $html_data);
-		$html_data = preg_replace('/_deliveryName_/',   $sihRecord['DELIVERY_NAME'],   $html_data);
-		$html_data = preg_replace('/_supplierCode_/',   mb_substr($sihRecord['SUPPLIER_CODE'], 3, 4),                               $html_data);
-		$html_data = preg_replace('/_supplierName_/',   $sihRecord['SUPPLIER_NAME'],   $html_data);
-		$html_data = preg_replace('/_warehouseCode_/',  mb_substr($sihRecord['WAREHOUSE_CODE'], 3, 4),                              $html_data);
-		$html_data = preg_replace('/_warehouseName_/',  $sihRecord['WAREHOUSE_NAME'],   $html_data);
-		$html_data = preg_replace('/_driverCode_/',     mb_substr($sihRecord['DRIVER_CODE'], 2, 4),                                 $html_data);
-		$html_data = preg_replace('/_driverName_/',     $sihRecord['DRIVER_NAME'],     $html_data);
-		$html_data = preg_replace('/_driverBarcode_/',  'data:image/png;base64,'.\DNS1D::getBarcodePNG($sihRecord['DRIVER_CODE'], 'C39', 1, 25, array(1, 1, 1), true), $html_data);
-		$html_data = preg_replace('/_truckerCode_/',    $sihRecord['TRUCKER_CODE'],                                                 $html_data);
-		$html_data = preg_replace('/_truckerName_/',    $sihRecord['TRUCKER_NAME'],    $html_data);
-		$html_data = preg_replace('/_flights_/',        $sihRecord['FLIGHTS'],                                                      $html_data);
+		if ($sihRecord['HCODE']!='7') {
+			// 通常
+			$html_data = preg_replace('/_customerTitle_/',  '得意先',   $html_data);
+			$html_data = preg_replace('/_customerCode_/',   mb_substr($sihRecord['CUSTOMER_CODE'], 3, 4),                               $html_data);
+			$html_data = preg_replace('/_customerName_/',   $sihRecord['CUSTOMER_NAME'],   $html_data);
+			$html_data = preg_replace('/_deliveryTitle_/',  '納入先',   $html_data);
+			$html_data = preg_replace('/_deliveryCode_/',   mb_substr($sihRecord['DELIVERY_CODE'], 3, 4),                               $html_data);
+			$html_data = preg_replace('/_deliveryName_/',   $sihRecord['DELIVERY_NAME'],   $html_data);
+			$html_data = preg_replace('/_supplierTitle_/',  '仕入先',   $html_data);
+			$html_data = preg_replace('/_supplierCode_/',   mb_substr($sihRecord['SUPPLIER_CODE'], 3, 4),                               $html_data);
+			$html_data = preg_replace('/_supplierName_/',   $sihRecord['SUPPLIER_NAME'],   $html_data);
+			$html_data = preg_replace('/_warehouseTitle_/', '倉庫',   $html_data);
+			$html_data = preg_replace('/_warehouseCode_/',  mb_substr($sihRecord['WAREHOUSE_CODE'], 3, 4),                              $html_data);
+			$html_data = preg_replace('/_warehouseName_/',  $sihRecord['WAREHOUSE_NAME'],   $html_data);
+			$html_data = preg_replace('/_driverTitle_/',    '運転手',   $html_data);
+			$html_data = preg_replace('/_driverCode_/',     mb_substr($sihRecord['DRIVER_CODE'], 2, 4),                                 $html_data);
+			$html_data = preg_replace('/_driverName_/',     $sihRecord['DRIVER_NAME'],     $html_data);
+			$html_data = preg_replace('/_driverBarcode_/',  'data:image/png;base64,'.\DNS1D::getBarcodePNG($sihRecord['DRIVER_CODE'], 'C39', 1, 25, array(1, 1, 1), true), $html_data);
+			$html_data = preg_replace('/_truckerTitle_/',   '運送会社',   $html_data);
+			$html_data = preg_replace('/_truckerCode_/',    $sihRecord['TRUCKER_CODE'],                                                 $html_data);
+			$html_data = preg_replace('/_truckerName_/',    $sihRecord['TRUCKER_NAME'],    $html_data);
+			$html_data = preg_replace('/_flightsTitle_/',   '便区分',   $html_data);
+			$html_data = preg_replace('/_flights_/',        $sihRecord['FLIGHTS'],                                                      $html_data);
+			$html_data = preg_replace('/_feeTitle_/',       '運賃',   $html_data);
+			$html_data = preg_replace('/_fee_/',            $sihRecord['FEE'],                                                          $html_data);
+			$html_data = preg_replace('/_addFeeTitle_/',    '付加',   $html_data);
+			$html_data = preg_replace('/_addFee_/',         $sihRecord['ADD_FEE'],                                                      $html_data);
+			$html_data = preg_replace('/_highwayFeeTitle_/','有料道路代',   $html_data);
+			$html_data = preg_replace('/_highwayFee_/',     $sihRecord['HIGHWAY_FEE'],                                                  $html_data);
 
-		$html_data = preg_replace('/_fee_/',            $sihRecord['FEE'],                                                          $html_data);
-		$html_data = preg_replace('/_addFee_/',         $sihRecord['ADD_FEE'],                                                      $html_data);
-		$html_data = preg_replace('/_highwayFee_/',     $sihRecord['HIGHWAY_FEE'],                                                  $html_data);
+			$html_data = preg_replace('/_feeClassMgnTitle1_/',  '運賃付替区分',   $html_data);
+			$html_data = preg_replace('/_feeClassMgnTitle2_/',  '他 ・ 自',   $html_data);
+			switch ($sihRecord['FEE_CLASS']) {
+				case 1:
+					$html_data = preg_replace('/_feeClassMgn_/', '16px',         $html_data);
+					$html_data = preg_replace('/_feeClassDis_/', 'inline-block', $html_data);
+					break;
+				case 2:
+					$html_data = preg_replace('/_feeClassMgn_/', '48px',         $html_data);
+					$html_data = preg_replace('/_feeClassDis_/', 'inline-block', $html_data);
+					break;
+				default:
+					$html_data = preg_replace('/_feeClassMgn_/', '0px',          $html_data);
+					$html_data = preg_replace('/_feeClassDis_/', 'none',         $html_data);
+					break;
+			}
+		} else {
+			// 在庫調整
+			$html_data = preg_replace('/_customerTitle_/',  '倉庫',   $html_data);
+			$html_data = preg_replace('/_customerCode_/',   mb_substr($sihRecord['DELIVERY_CODE'], 3, 4),                               $html_data);
+			$html_data = preg_replace('/_customerName_/',   $sihRecord['DELIVERY_NAME'],   $html_data);
+			$html_data = preg_replace('/_deliveryTitle_/',  '',   $html_data);
+			$html_data = preg_replace('/_deliveryCode_/',   '',   $html_data);
+			$html_data = preg_replace('/_deliveryName_/',   '',   $html_data);
+			$html_data = preg_replace('/_supplierTitle_/',  '',   $html_data);
+			$html_data = preg_replace('/_supplierCode_/',   '',   $html_data);
+			$html_data = preg_replace('/_supplierName_/',   '',   $html_data);
+			$html_data = preg_replace('/_warehouseTitle_/', '',   $html_data);
+			$html_data = preg_replace('/_warehouseCode_/',  '',   $html_data);
+			$html_data = preg_replace('/_warehouseName_/',  '',   $html_data);
+			$html_data = preg_replace('/_driverTitle_/',    '',   $html_data);
+			$html_data = preg_replace('/_driverCode_/',     '',   $html_data);
+			$html_data = preg_replace('/_driverName_/',     '',   $html_data);
+			$html_data = preg_replace('/_driverBarcode_/',  '""', $html_data);
+			$html_data = preg_replace('/_truckerTitle_/',   '',   $html_data);
+			$html_data = preg_replace('/_truckerCode_/',    '',   $html_data);
+			$html_data = preg_replace('/_truckerName_/',    '',   $html_data);
+			$html_data = preg_replace('/_flightsTitle_/',   '',   $html_data);
+			$html_data = preg_replace('/_flights_/',        '',   $html_data);
+			$html_data = preg_replace('/_feeTitle_/',       '',   $html_data);
+			$html_data = preg_replace('/_fee_/',            '',   $html_data);
+			$html_data = preg_replace('/_addFeeTitle_/',    '',   $html_data);
+			$html_data = preg_replace('/_addFee_/',         '',   $html_data);
+			$html_data = preg_replace('/_highwayFeeTitle_/','',   $html_data);
+			$html_data = preg_replace('/_highwayFee_/',     '',   $html_data);
 
-		switch ($sihRecord['FEE_CLASS']) {
-			case 1:
-				$html_data = preg_replace('/_feeClassMgn_/', '16px',         $html_data);
-				$html_data = preg_replace('/_feeClassDis_/', 'inline-block', $html_data);
-				break;
-			case 2:
-				$html_data = preg_replace('/_feeClassMgn_/', '48px',         $html_data);
-				$html_data = preg_replace('/_feeClassDis_/', 'inline-block', $html_data);
-				break;
-			default:
-				$html_data = preg_replace('/_feeClassMgn_/', '0px',          $html_data);
-				$html_data = preg_replace('/_feeClassDis_/', 'none',         $html_data);
-				break;
+			$html_data = preg_replace('/_feeClassMgnTitle1_/',  '',   $html_data);
+			$html_data = preg_replace('/_feeClassMgnTitle2_/',  '',   $html_data);
+			switch ($sihRecord['FEE_CLASS']) {
+				case 1:
+					$html_data = preg_replace('/_feeClassMgn_/', '16px',         $html_data);
+					$html_data = preg_replace('/_feeClassDis_/', 'inline-block', $html_data);
+					break;
+				case 2:
+					$html_data = preg_replace('/_feeClassMgn_/', '48px',         $html_data);
+					$html_data = preg_replace('/_feeClassDis_/', 'inline-block', $html_data);
+					break;
+				default:
+					$html_data = preg_replace('/_feeClassMgn_/', '0px',          $html_data);
+					$html_data = preg_replace('/_feeClassDis_/', 'none',         $html_data);
+					break;
+			}
 		}
 
 		for ($i = 0; $i < count($sidRecords); $i++) {
@@ -952,8 +1046,10 @@ class ShippingController extends Controller
 
 		// ヘッダーの取得
 		$sihRecord = sih::where('SIH_ID', $sihId)->first();
+		// $sihRecord = sih::where('ORDER_NO', $orderNo)->first();
 		// 明細の取得
 		$sidRecords = sid::where('SIH_ID', $sihId)->get();
+		// $sidRecords = sid::where('ORDER_NO', $orderNo)->get();
 
 		//日付系のフォーマット定義
 		$shipDate       = $sihRecord['SHIP_DATE'] != null ? date('Y-m-d', strtotime($sihRecord['SHIP_DATE'])) : "";            //出荷日

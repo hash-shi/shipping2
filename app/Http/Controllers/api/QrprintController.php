@@ -426,6 +426,7 @@ class QrprintController extends Controller
                     $Code2 = $Code1 . $PATTERN . str_pad($QTY, 10, 0, STR_PAD_LEFT);;
                     // QRコード = 仕入先 + 商品コード + 日付 + 連番 + 形態 + 入数
                     $QRCode = $SupplierCode . str_pad($ItemCode, 25) . $Code2;
+                    logger("QRCode", [$QRCode]);
                     $QRCode = \DNS2D::getBarcodePNG($QRCode, 'QRCODE', 4, 4);
                 }
 

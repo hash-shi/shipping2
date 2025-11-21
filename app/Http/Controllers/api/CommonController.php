@@ -140,7 +140,7 @@ class CommonController extends Controller
 	// (在庫調整用)
 	//-------------------------------------------------------------------------
 	public function updAdjustNo(Request $request){
-		$orderNo = $this->getOrderNo($request);
+		$orderNo = $this->getAdjustNo($request);
 		configures::where('ID', 'ADJUST_NO_NEXT')->update(['VALUE' => (intval($orderNo) + 1)]);
 		return $orderNo;
 	}
