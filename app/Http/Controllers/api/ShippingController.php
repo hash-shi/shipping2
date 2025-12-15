@@ -357,6 +357,9 @@ class ShippingController extends Controller
 		// 営業所コード
 		$officeCode = $configures[array_search('OFFICE_CODE', array_column($configures, 'ID'))]['VALUE'];
 
+		// 最新の受注No(在庫調整用)を取得
+		$adjustNo = $configures[array_search('ADJUST_NO_NEXT', array_column($configures, 'ID'))]['VALUE'];
+
 		// SIHの用意
 		$sihColumns = Schema::getColumnListing('sih');
 		// SIDの用意
@@ -500,6 +503,7 @@ class ShippingController extends Controller
 			"sihRecord"               => $sihRecord,
 			"sidRecords"              => $sidRecords,
 			"officeCode"              => $officeCode,
+			"adjustNo"                => $adjustNo
 		);
 		return $result;
 	}
@@ -933,6 +937,7 @@ class ShippingController extends Controller
 				$html_data = preg_replace('/_LoadingPlaceName' . $i . '_/', $sidRecord['LOADING_PLACE_NAME'],   $html_data);
 				$html_data = preg_replace('/_Remark1' . $i . '_/',          $sidRecord['REMARK1'],              $html_data);
 				$html_data = preg_replace('/_itemName' . $i . '_/',         $sidRecord['ITEM_NAME'],            $html_data);
+				$html_data = preg_replace('/_QName' . $i . '_/',            $sidRecord['QNAME'],                $html_data);
 				$html_data = preg_replace('/_Remark2' . $i . '_/',          $sidRecord['REMARK2'],              $html_data);
 				$QtySum = $QtySum + (double)$sidRecord['QTY2'];
 	
@@ -963,6 +968,7 @@ class ShippingController extends Controller
 				$html_data = preg_replace('/_Remark1' . $i . '_/',          '　', $html_data);
 				$html_data = preg_replace('/_itemName' . $i . '_/',         '　', $html_data);
 				$html_data = preg_replace('/_Remark2' . $i . '_/',          '　', $html_data);
+				$html_data = preg_replace('/_QName' . $i . '_/',            '　', $html_data);
 				$html_data = preg_replace('/_circle2' . $i . '_/',          'none', $html_data);
 			}
 		}
@@ -1113,11 +1119,13 @@ class ShippingController extends Controller
 		$hcodesD = $master->getHCodesD($request);
 		$places = $master->getPlaces($request);
 		$remarks = $master->getRemarks($request);
+		$qcodes = $master->getQCodes($request);
 		$result = array(
 			"users"         => $user,
 			"hcodesD"       => $hcodesD,
 			"places"        => $places,
 			"remarks"       => $remarks,
+			"qcodes"        => $qcodes,
 		);
 		return $result;
 	}

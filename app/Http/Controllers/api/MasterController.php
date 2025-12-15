@@ -16,6 +16,7 @@ use App\Models\itemsSupplier;
 use App\Models\itemsTransfer;
 use App\Models\offices;
 use App\Models\places;
+use App\Models\qcodes;
 use App\Models\remarks;
 use App\Models\sid;
 use App\Models\sih;
@@ -25,6 +26,8 @@ use App\Models\warehouses;
 use App\Libs\ProjectCommon;
 use Illuminate\Http\Request;
 use DB;
+use PhpParser\Node\Expr\FuncCall;
+
 class MasterController extends Controller {
 	//-------------------------------------------------------------------------
 	// Customers
@@ -1106,4 +1109,38 @@ class MasterController extends Controller {
 		if (0 < count($record)) { $result = $record[0]["NAME"]; }
 		return $result;
 	}
+
+	//-------------------------------------------------------------------------
+	// Qcodes
+	// 数量区分
+	// 
+	//-------------------------------------------------------------------------
+	public function getQCodes(Request $request) {
+
+		//---------------------------------------------------------------------
+		// パラメータ取得
+		//---------------------------------------------------------------------
+		$CODE = $request->input("CODE");
+
+		// 検索条件の組み立て
+		$query = qcodes::query();
+
+		// コード
+		if ($CODE != null && $CODE != ""){
+			$query->where('CODE', $CODE);
+		}
+
+		// 並び順
+		$query->orderBy('CODE', 'asc');
+
+		// 検索結果
+		// $customers = ProjectCommon::getRelation('\App\Models\hCodes', $query)->get();
+		$qCodes = $query->get();
+
+		// 返却
+		return $qCodes;
+
+	}
+
+
 }

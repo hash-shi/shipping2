@@ -134,6 +134,12 @@
     <input type="time" v-bind:disabled="!(sihRecord.DELIVERY_AMPM==1||sihRecord.DELIVERY_AMPM==2)" v-model="sihRecord.DELIVERY_TIME" :ref="'deliveryTime'" @keyup.enter="moveToNextField('deliveryTime')">
     </div>
   </div>
+  <!-- <div class="tv">
+    <div class="title w200">在庫調整指示Noの最後</div>
+    <div class="value">
+    <input type="text" size="10" v-bind:disabled="true" v-model="adjustNo">
+    </div>
+  </div> -->
   <br />
 
   <!-- 融通の場合のみ表示 -->
@@ -301,11 +307,12 @@
           <th class="w60"></th>
           <th class="w150">商品名</th>
           <th class="w60">入数</th>
+          <th class="w60">数量<br>区分</th>
           <th class="w60">袋数</th>
           <th class="w60">数量</th>
           <th class="showSmall">率</th>
           <th class="showSmall">積数</th>
-          <th class="w70">積込場所</th>
+          <th class="w60">積込<br>場所</th>
           <th class="w100">積込場所名</th>
           <th class="w150">備考1</th>
           <th class="w150">備考2</th>
@@ -342,6 +349,11 @@
             <input type="number" autocomplete="off" class="delspinner" size="5" style="text-align:right;width:50px;" v-model="sidRecord.QTY_PER_CTN" :ref="'qtyPerCtn_' + index" @keyup.enter="moveToNextField('qtyPerCtn_' + index)">
           </td>
           <td>
+            <select v-model="sidRecord.QCODE" :ref="'qcode_' + index" @keyup.enter="moveToNextField('qcode_' + index)">
+              <option v-for="(qcode, index) in master.QCodes" :key="index" :value="qcode.CODE">{{ qcode.CODE + ':' + qcode.NAME }}</option>
+            </select>
+          </td>
+          <td>
             <input type="number" autocomplete="off" size="5" style="text-align:right;width:50px;" v-model="sidRecord.QTY_CTN" :ref="'qtyCtn_' + index" @keyup.enter="moveToNextField('qtyCtn_' + index)">
           </td>
           <td class="right">{{ sidRecord.QTY = (sidRecord.QTY_PER_CTN * sidRecord.QTY_CTN) == 0 ? "":(sidRecord.QTY_PER_CTN * sidRecord.QTY_CTN) | comma }}</td>
@@ -366,7 +378,7 @@
           </td>
           </tr>
           <tr>
-          <td colspan=8></td>
+          <td colspan=9></td>
           <td><input type="text" autocomplete="off" class="showSmall" disabled name="" v-model="wariai"></td>
           <td colspan=5></td>
         </tr>
@@ -469,12 +481,16 @@ export default {
         'HCodesD': [],
         'Places': [],
         'Remarks': [],
+        'QCodes': [],
       },
 
       // 営業所コード
       officeCode:"",
       // // 相手営業所コード
       // officeOtherCode:"",
+
+      // 受注No(在庫調整用)
+      adjustNo:"",
 
       // ヘッダーとボディデータ
       sihRecord: {
@@ -522,6 +538,7 @@ export default {
         this.sihRecord    = response.data.sihRecord;
         this.sidRecords     = response.data.sidRecords;
         this.officeCode     = response.data.officeCode;
+        this.adjustNo       = response.data.adjustNo;
       })
 
       //画面名称の設定
@@ -586,6 +603,7 @@ export default {
           'HCodesD': data.hcodesD,
           'Places': data.places,
           'Remarks': data.remarks,
+          'QCodes': data.qcodes,
         }
       });
 
@@ -1432,6 +1450,7 @@ export default {
         this.nextFields.push({ 'id':'hcode_' + i,       'disabled': false, });
         this.nextFields.push({ 'id':'itemCode_' + i,      'disabled': false, });
         this.nextFields.push({ 'id':'qtyPerCtn_' + i,     'disabled': false, });
+        this.nextFields.push({ 'id':'qcode_' + i,       'disabled': false, });
         this.nextFields.push({ 'id':'qtyCtn_' + i,      'disabled': false, });
         this.nextFields.push({ 'id':'loadingPlaceCode_' + i,  'disabled': false, });
         this.nextFields.push({ 'id':'loadingPlaceName_' + i,  'disabled': false, });
