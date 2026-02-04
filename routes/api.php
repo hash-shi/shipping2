@@ -29,7 +29,7 @@ Route::get('today'                                              , "App\Http\Cont
 // 受注番号
 Route::get('orderNo'                                            , "App\Http\Controllers\api\CommonController@getOrderNo");
 Route::get('adjustNo'                                           , "App\Http\Controllers\api\CommonController@getAdjustNo");
-
+Route::get('adjustNoMax'                                        , "App\Http\Controllers\api\CommonController@getAdjustNoMax");
 // 
 
 // 出荷指示関連

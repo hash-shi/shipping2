@@ -53,6 +53,8 @@ class sih extends Model
         'ADD_FEE' => 'int',
         'HIGHWAY_FEE' => 'int',
         'FEE_CLASS' => 'int',
+        'OFFICE_FEE_CODE' => 'string',
+        'OFFICE_FEE_NAME' => 'string',
         'CONTINUED_SHEET' => 'int',
         'ALL_SHEET' => 'int',
         'CURRENT_SHEET' => 'int',

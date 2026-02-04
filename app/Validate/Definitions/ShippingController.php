@@ -81,6 +81,9 @@ class ShippingController extends ValidateDefinitionsBase {
 			'sidRecords.*.QTY_PER_CTN'     => ['required_with:sidRecords.*.ITEM_CODE'],
 			'sidRecords.*.QTY_CTN'         => ['required_with:sidRecords.*.ITEM_CODE'],
 		],
+		"exis" => [
+			'ORDER_NO'                     => ['required', 'numeric', 'min:1', 'max:999998'],
+		],
 	);
 
 	//-----------------------------------------------------

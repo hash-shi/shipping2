@@ -145,4 +145,39 @@ class CommonController extends Controller
 		return $orderNo;
 	}
 
+	//-------------------------------------------------------------------------
+	// ORDER_NO
+	// 出荷指示の受注番号を採番
+	// (在庫調整用)
+	// HANE1用特殊処理、SIHから900000番台の中の最大値+1を返却する。
+	//-------------------------------------------------------------------------
+	public function getAdjustNoMax(Request $request){
+		
+		$orderNo = "900000";
+
+		$sql = "";
+
+		$sql = "
+		SELECT
+			(MAX(ORDER_NO) + 1) ORDER_NO
+		FROM
+			SIH
+		WHERE
+			1 = 1
+		AND ORDER_NO BETWEEN 900000 AND 999999
+		";
+
+		// コード
+		$param[] = null;
+
+		$record = DB::select($sql, $param);
+		$record = json_decode(json_encode($record), true);
+
+		if (0 < count($record)) { $orderNo = $record[0]["ORDER_NO"]; }
+
+		// + 1して返却
+		// return sprintf('%06d', (intval($orderNo) + 1));
+		return sprintf('%06d', (intval($orderNo)));
+	}
+
 }

@@ -149,7 +149,7 @@
       <div class="value">
         <input type="text" autocomplete="off" size="6" list="offices" id="officesOtherCode" v-model="sihRecord.OFFICE_OTHER_CODE" v-on:keyup="officeOtherC2N()" v-on:blur="officeOtherBlur()" :ref="'officesOtherCode'" @keyup.enter="moveToNextField('officesOtherCode')">
         <font-awesome-icon icon="times" v-on:click="sihRecord.OFFICE_OTHER_CODE='';officeOtherC2N();officeOtherBlur();" style="cursor:pointer;" />
-        <font-awesome-icon icon="search" v-on:click="opneDialog('OfficeSearch')" style="cursor:pointer;" />
+        <font-awesome-icon icon="search" v-on:click="opneDialog('OfficeOtherSearch')" style="cursor:pointer;" />
         <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.OFFICE_OTHER_NAME">
       </div>
     </div>
@@ -282,6 +282,7 @@
       <div class="title">有料道路代</div>
       <div class="value"><input type="text" autocomplete="off" class="right" size="10" v-model="sihRecord.HIGHWAY_FEE" v-on:blur="sihRecord.HIGHWAY_FEE=comma(sihRecord.HIGHWAY_FEE)" v-on:focus="sihRecord.HIGHWAY_FEE=delcomma(sihRecord.HIGHWAY_FEE)" :ref="'highwayFee'" @keyup.enter="moveToNextField('highwayFee')"></div>
     </div>
+<!--
     <div class="tv">
       <div class="title">運賃振替</div>
       <div class="value">
@@ -289,6 +290,17 @@
       <label><input type="radio" name="radio" value="2" v-model="sihRecord.FEE_CLASS" :ref="'feeClass1'" @keyup.enter="moveToNextField('feeClass1')">自</label>
       </div>
     </div>
+-->
+    <div class="tv">
+      <div class="title" style="width:130px;">運賃負担営業所</div>
+      <div class="value">
+        <input type="text" autocomplete="off" size="6" v-bind:disabled="!(sihRecord.HCODE==4 || sihRecord.HCODE==5 || sihRecord.HCODE==6)" list="offices" id="officesFeeCode" v-model="sihRecord.OFFICE_FEE_CODE" v-on:keyup="officeFeeC2N()" v-on:blur="officeFeeBlur()" :ref="'officesFeeCode'" @keyup.enter="moveToNextField('officesFeeCode')">
+        <font-awesome-icon icon="times" v-on:click="sihRecord.OFFICE_FEE_CODE='';officeFeeC2N();officeFeeBlur();" style="cursor:pointer;" />
+        <font-awesome-icon icon="search" v-on:click="opneDialog('OfficeFeeSearch')" style="cursor:pointer;" />
+        <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.OFFICE_FEE_NAME">
+      </div>
+    </div>
+
   </div>
 
   <pre></pre>
@@ -443,8 +455,11 @@
   <!-- 商品 -->
   <ItemSearchDialog      v-if="showDialog.ItemSearch"    :searchHcode="String(sihRecord.HCODE)" :searchCustomerCode="sihRecord.CUSTOMER_CODE" :searchDeliveryCode="sihRecord.DELIVERY_CODE" :searchSupplierCode="sihRecord.SUPPLIER_CODE" @close="closeDialog('ItemSearch')"    @select="selectItemDialog"    ></ItemSearchDialog>
 
-  <!-- 営業所 -->
-  <OfficeSearchDialog    v-if="showDialog.OfficeSearch"                                                       @close="closeDialog('OfficeSearch')"  @select="selectOfficeDialog"  ></OfficeSearchDialog>
+  <!-- 営業所(相手先) -->
+  <OfficeSearchDialog    v-if="showDialog.OfficeOtherSearch"                                                       @close="closeDialog('OfficeOtherSearch')"  @select="selectOfficeOtherDialog"  ></OfficeSearchDialog>
+
+  <!-- 営業所(運賃負担) -->
+  <OfficeSearchDialog    v-if="showDialog.OfficeFeeSearch"                                                         @close="closeDialog('OfficeFeeSearch')"    @select="selectOfficeFeeDialog"  ></OfficeSearchDialog>
 
   <!-- 複写 -->
   <InputShippingDialog   v-if="showDialog.InputShippingCp" @close="closeDialog('InputShippingCp')" @complete="copyDetail"  :mode="'copy'"  :hCode="String(sihRecord.HCODE)" :baseSihId="sihRecord.SIH_ID" ></InputShippingDialog>
@@ -471,7 +486,8 @@ export default {
         'DriverSearch': false,									// 運転手検索ダイアログの表示・非表示管理フラグ
         'ItemSearch': false,										// 商品検索ダイアログの表示・非表示管理フラグ
         'ItemSearchIndex': -1,									// 商品検索ダイアログの検索結果格納先Index(明細が複数存在している為)
-        'OfficeSearch': false,									// 営業所検索ダイアログの表示・非表示管理フラグ
+        'OfficeOtherSearch': false,							// 営業所検索ダイアログの表示・非表示管理フラグ
+        'OfficeFeeSearch': false,								// 営業所検索ダイアログの表示・非表示管理フラグ
         'InputShippingCp': false,								// 複写ダイアログの表示・非表示管理フラグ
       },
 
@@ -501,6 +517,7 @@ export default {
       //一時保存値
       origin: {
         'OfficeOtherCode': '',
+        'OfficeFeeCode': '',
         'CustomerCode': '',
         'DeliveryCode': '',
         'SupplierCode': '',
@@ -820,12 +837,20 @@ export default {
     // ダイアログで選択した値を反映
     //-------------------------------------------------------------------------
     // 営業所ダイアログで選択した営業所を格納してダイアログを閉じる
-    selectOfficeDialog: function(officeCode){
+    selectOfficeOtherDialog: function(officeCode){
       this.sihRecord.OFFICE_OTHER_CODE = officeCode;
-      this.closeDialog('OfficeSearch');
+      this.closeDialog('OfficeOtherSearch');
       this.officeOtherBlur();
       this.officeOtherC2N();
       this.$nextTick(() => this.moveToNextField('officesOtherCode'));
+    },
+    // 営業所ダイアログで選択した営業所を格納してダイアログを閉じる
+    selectOfficeFeeDialog: function(officeCode){
+      this.sihRecord.OFFICE_FEE_CODE = officeCode;
+      this.closeDialog('OfficeFeeSearch');
+      this.officeFeeBlur();
+      this.officeFeeC2N();
+      this.$nextTick(() => this.moveToNextField('officesFeeCode'));
     },
     // 得意先ダイアログで選択した得意先を格納してダイアログを閉じる
     selectCustomerDialog: function(customerCode){
@@ -991,6 +1016,41 @@ export default {
       this.origin.OfficeOtherCode = this.sihRecord.OFFICE_OTHER_CODE;
       // 
       this.officeOtherC2N();
+    },
+
+    //-------------------------------------------------------------------------
+    // 相手営業所関連
+    //-------------------------------------------------------------------------
+    // キー入力
+    officeFeeC2N: async function (){
+      // 桁数が一定以下を処理しない(DBへの通信回数を減らす)
+      if ((this.sihRecord.OFFICE_FEE_CODE??"").length < 3) { this.sihRecord.OFFICE_FEE_NAME = ""; return; }
+      // 変更がある場合のみ処理
+      if (this.origin.OfficeFeeCode == this.sihRecord.OFFICE_FEE_CODE) return;
+      // 変更値を格納
+      this.origin.OfficeFeeCode = this.sihRecord.OFFICE_FEE_CODE;
+      // 名称取得
+      this.sihRecord.OFFICE_FEE_NAME = await this.getOfficeName(this.sihRecord.OFFICE_FEE_CODE);
+    },
+    // フォーカスアウト
+    officeFeeBlur: async function(){
+      // 変更がある場合のみ処理
+      if (this.origin.OfficeFeeCode == this.sihRecord.OFFICE_FEE_CODE) return;
+      // 仕入先/倉庫/運転手をクリアする。
+      this.sihRecord.SUPPLIER_CODE = "";
+      this.sihRecord.SUPPLIER_NAME = "";
+      this.sihRecord.WAREHOUSE_CODE = "";
+      this.sihRecord.WAREHOUSE_NAME = "";
+      this.sihRecord.DRIVER_CODE = "";
+      this.sihRecord.DRIVER_NAME = "";
+      this.sihRecord.TRUCKER_CODE = "";
+      this.sihRecord.TRUCKER_NAME = "";
+      // 名称取得
+      this.sihRecord.OFFICE_FEE_NAME = await this.getOfficeName(this.sihRecord.OFFICE_FEE_CODE)
+      // 変更値を格納
+      this.origin.OfficeFeeCode = this.sihRecord.OFFICE_FEE_CODE;
+      // 
+      this.officeFeeC2N();
     },
 
     //-------------------------------------------------------------------------
@@ -1443,8 +1503,9 @@ export default {
       this.nextFields.push({ 'id':'fee',          'disabled': false, });
       this.nextFields.push({ 'id':'addFee',         'disabled': false, });
       this.nextFields.push({ 'id':'highwayFee',       'disabled': false, });
-      this.nextFields.push({ 'id':'feeClass0',      'disabled': false, });
-      this.nextFields.push({ 'id':'feeClass1',      'disabled': false, });
+      // this.nextFields.push({ 'id':'feeClass0',      'disabled': false, });
+      // this.nextFields.push({ 'id':'feeClass1',      'disabled': false, });
+      this.nextFields.push({ 'id':'officesFeeCode',   'disabled': !(this.sihRecord.HCODE==4||this.sihRecord.HCODE==5||this.sihRecord.HCODE==6), });
 
       for (var i = 0; i < this.sidRecords.length; i++) {
         this.nextFields.push({ 'id':'hcode_' + i,       'disabled': false, });

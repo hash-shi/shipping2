@@ -359,6 +359,7 @@ class ShippingController extends Controller
 
 		// 最新の受注No(在庫調整用)を取得
 		$adjustNo = $configures[array_search('ADJUST_NO_NEXT', array_column($configures, 'ID'))]['VALUE'];
+		// $adjustNo = $common->getAdjustNoMax($request);
 
 		// SIHの用意
 		$sihColumns = Schema::getColumnListing('sih');
@@ -461,11 +462,25 @@ class ShippingController extends Controller
 			$sihRecord['FEE']               = null;
 			$sihRecord['ADD_FEE']           = null;
 			$sihRecord['HIGHWAY_FEE']       = null;
+			$sihRecord['FEE_CLASS']       	= null;
+			$sihRecord['OFFICE_FEE_CODE']   = null;
+			$sihRecord['OFFICE_FEE_NAME']   = null;
+			$sihRecord['CONTINUED_SHEET']   = null;
+			$sihRecord['ALL_SHEET']       	= null;
+			$sihRecord['CURRENT_SHEET']     = null;
+			$sihRecord['LOADING_RATE']      = null;
+			$sihRecord['INVOICE_NOTE']      = null;
+			$sihRecord['DELIVERY_NOTE']     = null;
+			$sihRecord['TAG_NOTE']       		= null;
 			$sihRecord['CONFIRM_DATE']      = null;
 			$sihRecord['STATUS']            = '0';
 			$sihRecord['SNAME']             = status::where('id', '0')->first()['name'];
-			$sihRecord['PRINT_DATE']        = null;
+			$sihRecord['PRINT_DATE']       	= null;
+			$sihRecord['PRINT_COUNT']       = null;
 			$sihRecord['COMPLETION_DATE']   = null;
+			$sihRecord['PRINT2_DATE']       = null;
+			$sihRecord['PRINT2_COUNT']      = null;
+			$sihRecord['CONFIRM_COUNT']     = null;
 			// 明細
 			if ($sihIdBase !== "") {
 				// 複写

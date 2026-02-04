@@ -794,7 +794,7 @@ class MasterController extends Controller {
 				OFFICES
 			where
 				1 = 1
-			and CODE
+			and CODE = ?
 			order by
 				CODE
 		";
