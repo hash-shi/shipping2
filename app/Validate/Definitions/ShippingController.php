@@ -37,6 +37,7 @@ class ShippingController extends ValidateDefinitionsBase {
 			'sihRecord.DRIVER_CODE'        => ['nullable', 'exists:drivers,CODE'],
 			'sihRecord.TRUCKER_CODE'       => ['required_with:sihRecord.DRIVER_CODE', 'nullable', 'exists:truckers,CODE'],
 			'sihRecord.FLIGHTS'            => ['required_with:sihRecord.DRIVER_CODE'],
+			'sihRecord.OFFICE_FEE_CODE'    => ['required_if:sihRecord.HCODE,4,5,6'],
 
 			'sidRecords.*.HCODE'           => ['required_with:sidRecords.*.ITEM_CODE', 'nullable', 'exists:hcodesD,CODE'],
 			'sidRecords.*.ITEM_CODE'       => ['required_with:sidRecords.*.HCODE','required_with:sidRecords.*.QTY_PER_CTN','required_with:sidRecords.*.QTY_CTN',],
@@ -55,7 +56,8 @@ class ShippingController extends ValidateDefinitionsBase {
 			'sihRecord.DRIVER_CODE'        => ['nullable', 'exists:drivers,CODE'],
 			'sihRecord.TRUCKER_CODE'       => ['required_with:sihRecord.DRIVER_CODE', 'nullable', 'exists:truckers,CODE'],
 			'sihRecord.FLIGHTS'            => ['required_with:sihRecord.DRIVER_CODE'],
-			
+			'sihRecord.OFFICE_FEE_CODE'    => ['required_if:sihRecord.HCODE,4,5,6'],
+
 			'sidRecords.*.HCODE'           => ['required_with:sidRecords.*.ITEM_CODE', 'nullable', 'exists:hcodesD,CODE'],
 			'sidRecords.*.ITEM_CODE'       => ['required_with:sidRecords.*.HCODE','required_with:sidRecords.*.QTY_PER_CTN','required_with:sidRecords.*.QTY_CTN',],
 			'sidRecords.*.QTY_PER_CTN'     => ['required_with:sidRecords.*.ITEM_CODE'],
@@ -90,7 +92,9 @@ class ShippingController extends ValidateDefinitionsBase {
 	// 入力値チェックのメッセージ定義
 	//-----------------------------------------------------
 	private $messages = array(
-		"basic"     => [],
+		"basic"     => [
+			"sihRecord.OFFICE_FEE_CODE.required_if" => '取区が「融通」の場合、:attributeは必ず指定してください。',
+		],
 	);
 
 	//-----------------------------------------------------
@@ -112,6 +116,7 @@ class ShippingController extends ValidateDefinitionsBase {
 			'sihRecord.DRIVER_CODE'         => '運転手',
 			'sihRecord.TRUCKER_CODE'        => '運送会社',
 			'sihRecord.FLIGHTS'             => '便区分',
+			'sihRecord.OFFICE_FEE_CODE'     => '運賃負担営業所',
 
 			'sidRecords.*.HCODE'            => '区',
 			'sidRecords.*.ITEM_CODE'        => '商品コード',
@@ -198,6 +203,26 @@ class ShippingController extends ValidateDefinitionsBase {
 				}
 				$fail('明細が入力されていません。');
 			}]);
+
+			// 混在チェック
+			// 在庫調整以外で数量+-のデータが混在してはいけない
+			// ただし、サンプル品の場合は混在してもよい
+			$this->sidRecords = $request->input('sidRecords');
+			$rules  = $this->add($rules, ['sihRecord.ORDER_NO' => function($attribute, $value, $fail) {
+				$plus = 0;
+				$minus = 0;
+				foreach($this->sidRecords as $record) {
+					// サンプル品は除外する
+					if ($record["SAMPLE"] != "1") {
+						if (0 < $record["QTY"]) { $plus++; }
+						if (0 > $record["QTY"]) { $minus++; }
+					}
+				}
+				if (0 < $plus && 0 < $minus) {
+					$fail('赤伝/黒伝が混在しています。');
+				}
+			}]);
+
 		}
 
 		return $rules; 

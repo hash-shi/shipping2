@@ -272,6 +272,7 @@ class MasterController extends Controller {
 		}
 
 		// 並び順
+		$query->orderBy('TRUCKER_CODE', 'asc');
 		$query->orderBy('CODE', 'asc');
 
 		// 検索結果
@@ -292,8 +293,8 @@ class MasterController extends Controller {
 		//---------------------------------------------------------------------
 		$code         = $request->input("code") ?? "0";
 		$truckerCode	= $request->input("truckerCode");
-		$companyCode	= $request->input("companyCode");
-
+		$companyCode	= $request->input("companyCode");		// 自営業所
+		$companyCode_	= $request->input("companyCode_");	// 相手先営業所
 		$sql = "
 			select
 				NAME
@@ -311,9 +312,16 @@ class MasterController extends Controller {
 			$param[] = $truckerCode;
 		}
 
-		if ($companyCode != null && $companyCode != "") {
+		if (($companyCode != null && $companyCode != "") && ($companyCode_ != null && $companyCode_ != "")) {
+			$sql = $sql . " and (COMPANY_CODE = ? or COMPANY_CODE = ?) ";
+			$param[] = $companyCode;
+			$param[] = $companyCode_;
+		} else if ($companyCode != null && $companyCode != "") {
 			$sql = $sql . " and COMPANY_CODE = ? ";
 			$param[] = $companyCode;
+		} else if ($companyCode_ != null && $companyCode_ != "") {
+			$sql = $sql . " and COMPANY_CODE = ? ";
+			$param[] = $companyCode_;
 		}
 
 		$sql = $sql . "
@@ -343,7 +351,8 @@ class MasterController extends Controller {
 		//---------------------------------------------------------------------
 		$code         = $request->input("code") ?? "0";
 		$truckerCode	= $request->input("truckerCode");
-		$companyCode	= $request->input("companyCode");
+		$companyCode	= $request->input("companyCode");		// 自営業所
+		$companyCode_	= $request->input("companyCode_");	// 相手先営業所
 
 		$sql = "
 			select
@@ -361,9 +370,17 @@ class MasterController extends Controller {
 			$sql = $sql . " and TRUCKER_CODE = ? ";
 			$param[] = $truckerCode;
 		}
-		if ($companyCode != null && $companyCode != "") {
+
+		if (($companyCode != null && $companyCode != "") && ($companyCode_ != null && $companyCode_ != "")) {
+			$sql = $sql . " and (COMPANY_CODE = ? or COMPANY_CODE = ?) ";
+			$param[] = $companyCode;
+			$param[] = $companyCode_;
+		} else if ($companyCode != null && $companyCode != "") {
 			$sql = $sql . " and COMPANY_CODE = ? ";
 			$param[] = $companyCode;
+		} else if ($companyCode_ != null && $companyCode_ != "") {
+			$sql = $sql . " and COMPANY_CODE = ? ";
+			$param[] = $companyCode_;
 		}
 
 		$sql = $sql . "
@@ -463,66 +480,99 @@ class MasterController extends Controller {
 		// パラメータ取得
 		//---------------------------------------------------------------------
 		// 20220720_hash-shi_得意先・納入先の絞り込み追加_str------------
-		$searchHcode            = $request->input("searchHcode");
-		$searchCustomerCode     = $request->input("searchCustomerCode");
-		$searchDeliveryCode     = $request->input("searchDeliveryCode");
-		$searchSupplierCode     = $request->input("searchSupplierCode");
+		$hcode            = $request->input("hcode");
+		// ↓2026/03/31_hash-shi_融通変換対応------------------------------
+		$officeCode       = $request->input("officeCode");
+		$officeCodeF      = $request->input("officeCodeF");
+		$officeCodeT      = $request->input("officeCodeT");
+		// ↑2026/03/31_hash-shi_融通変換対応------------------------------
+		$customerCode     = $request->input("customerCode");
+		$deliveryCode     = $request->input("deliveryCode");
+		$supplierCode     = $request->input("supplierCode");
 		// 20220720_hash-shi_得意先・納入先の絞り込み追加_end------------
-		$searchItemCode         = $request->input("searchItemCode");
-		$searchItemName         = $request->input("searchItemName");
-		$searchType             = $request->input("searchType");
+		$itemCode         = $request->input("itemCode");
+		$itemName         = $request->input("itemName");
+		$like             = $request->input("like");
 
 		// 検索条件の組み立て
 		$query = items::query();
+		
+		// ↓2026/03/31_hash-shi_融通変換対応------------------------------
+		// 融通の場合、変換マスタで絞り込みをする。
+		if ($hcode == 4 || $hcode == 5 || $hcode == 6) {
+			$query->join('ITEMS_TRANSFER', function($queryItems) use($officeCode, $officeCodeF, $officeCodeT) {
+				if ($officeCode == $officeCodeF) {
+					// 融通元のコードを表示する。
+					$queryItems->on('ITEM_CODE_F', 'CODE');
+				} else {
+					// 融通先のコードを表示する。
+					$queryItems->on('ITEM_CODE_T', 'CODE');
+				}
+				// 融通元(相手先営業所)
+				$queryItems->where('OFFICE_CODE_F', $officeCodeF);
+				// 融通先(自営業所)
+				$queryItems->where('OFFICE_CODE_T', $officeCodeT);
+			});
+		}
+		// ↑2026/03/31_hash-shi_融通変換対応------------------------------
 
 		// 売上or仕入で分岐する。
-		if ($searchHcode == 1 || $searchHcode == 4) {
+		if ($hcode == 1 || $hcode == 4) {
+			// 通常仕入/融通仕入の場合、得意先納入先で絞り込む
 			// 得意先別納入先別マスタ
-			$query->whereIn('CODE', function($queryItemsC) use($searchCustomerCode, $searchDeliveryCode) {
-				$queryItemsC->from('ITEMS_CUSTOMER');
-				$queryItemsC->select('ITEM_CODE');
-
-				// 得意先コード
-				if ($searchCustomerCode != null && $searchCustomerCode != "") {
-					$queryItemsC->where('CUSTOMER_CODE', $searchCustomerCode);
+			$query->join('ITEMS_CUSTOMER', function($queryItems) use($hcode, $customerCode, $deliveryCode) {
+				if ($hcode == 4 || $hcode == 5 || $hcode == 6) {
+					// 融通の場合、融通先の商品コードと連結する。
+					$queryItems->on('ITEM_CODE', 'ITEM_CODE_T');
+				} else {
+					// 融通以外の場合、商品コードと連結する。
+					$queryItems->on('ITEM_CODE', 'CODE');
 				}
-
+				// 得意先コード
+				if ($customerCode != null && $customerCode != "") {
+					$queryItems->where('CUSTOMER_CODE', $customerCode);
+				}
 				// 納入先コード
-				$queryItemsC->where(function ($queryDel) use($searchDeliveryCode) {
-					if ($searchDeliveryCode != null && $searchDeliveryCode != "") {
-						$queryDel->where('DELIVERY_CODE', $searchDeliveryCode)->orWhereNull('DELIVERY_CODE');
+				$queryItems->where(function ($queryDel) use($deliveryCode) {
+					if ($deliveryCode != null && $deliveryCode != "") {
+						$queryDel->where('DELIVERY_CODE', $deliveryCode)->orWhereNull('DELIVERY_CODE');
 					}
 				});
-
-				$queryItemsC->distinct();
+				$queryItems->distinct();
 			});
-		} else if ($searchHcode != 1 && $searchHcode != 4) {
+		} else if ($hcode != 1 && $hcode != 4) {
+			// 通常仕入/融通仕入以外の場合、仕入先で絞り込む
 			// 仕入先別マスタ
-			$query->whereIn('CODE', function($queryItemsC) use($searchSupplierCode) {
-				$queryItemsC->from('ITEMS_SUPPLIER');
-				$queryItemsC->select('ITEM_CODE');
-				// 仕入先コード
-				if ($searchSupplierCode != null && $searchSupplierCode != "") {
-					$queryItemsC->where('SUPPLIER_CODE', $searchSupplierCode);
+			$query->join('ITEMS_SUPPLIER', function($queryItems) use($hcode, $supplierCode) {
+				if ($hcode == 4 || $hcode == 5 || $hcode == 6) {
+					// 融通の場合、融通先の商品コードと連結する。
+					$queryItems->on('ITEM_CODE', 'ITEM_CODE_T');
+				} else {
+					// 融通以外の場合、商品コードと連結する。
+					$queryItems->on('ITEM_CODE', 'CODE');
 				}
-				$queryItemsC->distinct();
+				// 仕入先コード
+				if ($supplierCode != null && $supplierCode != "") {
+					$queryItems->where('SUPPLIER_CODE', $supplierCode);
+				}
+				$queryItems->distinct();
 			});
 		}
 
 		// 商品コード
-		if($searchType =="1") {
-			if ($searchItemCode != null && $searchItemCode != "") {
-				$query->where('CODE', $searchItemCode);
+		if($like =="1") {
+			if ($itemCode != null && $itemCode != "") {
+				$query->where('CODE', $itemCode);
 			}
 		} else {
-			if ($searchItemCode != null && $searchItemCode != "") {
-				$query->where('CODE', 'LIKE', '%' . $searchItemCode . '%');
+			if ($itemCode != null && $itemCode != "") {
+				$query->where('CODE', 'LIKE', '%' . $itemCode . '%');
 			}
 		}
 
 		// 商品名
-		if ($searchItemName != null && $searchItemName != "") {
-			$query->where('NAME', 'LIKE', '%' . $searchItemName . '%');
+		if ($itemName != null && $itemName != "") {
+			$query->where('NAME', 'LIKE', '%' . $itemName . '%');
 		}
 
 		// 並び順
@@ -530,6 +580,8 @@ class MasterController extends Controller {
 
 		// 検索結果
 		$items = $query->get();
+
+		// logger($query->toSql());
 
 		// 返却
 		return $items;
@@ -545,64 +597,135 @@ class MasterController extends Controller {
 		//---------------------------------------------------------------------
 		$code         		= $request->input("code") ?? "0";
 		$hCode            = $request->input("hCode") ?? "0";
+		// ↓2026/03/31_hash-shi_融通変換対応------------------------------
+		$officeCode       = $request->input("officeCode");
+		$officeCodeF      = $request->input("officeCodeF");
+		$officeCodeT      = $request->input("officeCodeT");
+		// ↑2026/03/31_hash-shi_融通変換対応------------------------------
 		$customerCode     = $request->input("customerCode");
 		$deliveryCode     = $request->input("deliveryCode");
 		$supplierCode     = $request->input("supplierCode");
 
 		$sql = "
-			select
-				NAME
-			from
-				ITEMS
+		select
+			NAME
+		from
+			ITEMS
+		";
+
+		// ↓2026/03/31_hash-shi_融通変換対応------------------------------
+		if ($hCode == 4 || $hCode == 5 || $hCode == 6) {
+
+			// 融通の場合のみ変換マスタ使用する。
+
+			// 融通変換マスタ
+			$sql_ = "
+			inner join (
+				select
+					ITEM_CODE_F
+					,ITEM_CODE_T
+				from
+					ITEMS_TRANSFER
+				where
+					1 = 1
+				and OFFICE_CODE_F = ?
+				and OFFICE_CODE_T = ?
+			) T
+			";
+			$param[] = $officeCodeF;
+			$param[] = $officeCodeT;
+
+			if ($officeCode == $officeCodeF) {
+				// 融通元からログインしている場合は、融通元で変換する。
+				$sql_ = $sql_ . " on T.ITEM_CODE_F = CODE ";
+			} else {
+				// それ以外は融通先で変換する。
+				$sql_ = $sql_ . " on T.ITEM_CODE_T = CODE ";
+			}
+
+			$sql = $sql . $sql_;
+		} 
+		// ↑2026/03/31_hash-shi_融通変換対応------------------------------
+
+		// 売上or仕入で分岐する。
+		if ($hCode == 1 || $hCode == 4) {
+
+			// 得意先別納入先別マスタ
+			$sql_ = "
+			inner join (
+				select distinct 
+					ITEM_CODE
+				from
+					ITEMS_CUSTOMER
+				where
+					1 = 1
+			";
+
+			if ($customerCode != null && $customerCode != "") {
+				$sql_ = $sql_ . " and CUSTOMER_CODE = ? ";
+				$param[] = $customerCode;
+			}
+			if ($deliveryCode != null && $deliveryCode != "") {
+				$sql_ = $sql_ . " and (DELIVERY_CODE = ? or DELIVERY_CODE is null) ";
+				$param[] = $deliveryCode;
+			}
+
+			$sql_ = $sql_ . "
+			) C
+			";
+
+			if ($hCode == 4 || $hCode == 5 || $hCode == 6) {
+				// 融通の場合、融通先の商品コードと連結する。
+				$sql_ = $sql_ . " on C.ITEM_CODE = T.ITEM_CODE_T ";
+			} else {
+				// 融通以外の場合、商品コードと連結する。
+				$sql_ = $sql_ . " on C.ITEM_CODE = ITEMS.CODE ";
+			}
+
+			$sql = $sql . $sql_;
+
+		} else if ($hCode != 1 && $hCode != 4) {
+
+			// 仕入先別マスタ
+			$sql_ = "
+			inner join (
+				select distinct 
+					ITEM_CODE
+				from
+					ITEMS_SUPPLIER
+				where
+					1 = 1
+			";
+
+			if ($supplierCode != null && $supplierCode != "") {
+				$sql_ = $sql_ . " and SUPPLIER_CODE = ? ";
+				$param[] = $customerCode;
+			}
+
+			$sql_ = $sql_ . "
+			) S
+			";
+
+			if ($hCode == 4 || $hCode == 5 || $hCode == 6) {
+				// 融通の場合、融通先の商品コードと連結する。
+				$sql_ = $sql_ . " on S.ITEM_CODE = T.ITEM_CODE_T ";
+			} else {
+				// 融通以外の場合、商品コードと連結する。
+				$sql_ = $sql_ . " on S.ITEM_CODE = ITEMS.CODE ";
+			}
+
+			$sql = $sql . $sql_;
+
+		}
+
+		$sql = $sql . "
 			where
 				1 = 1
 			and CODE = ?
 		";
 		$param[] = $code;
 
-		// 売上or仕入で分岐する。
-		if ($hCode == 1 || $hCode == 4) {
-			// 得意先別納入先別マスタ
-			$sql += "
-				and CODE in (
-					select distinct
-						ITEM_CODE
-					from
-						ITEMS_CUSTOMER
-					where
-						1 = 1
-			";
-			if ($customerCode != null && $customerCode != "") {
-				$sql += " and CUSTOMER_CODE = ? ";
-				$param[] = $customerCode;
-			}
-			if ($deliveryCode != null && $deliveryCode != "") {
-				$sql += " and (DELIVERY_CODE = ? or DELIVERY_CODE is null) ";
-				$param[] = $deliveryCode;
-			}
-			$sql += "
-				)
-			";
-		} else if ($hCode != 1 && $hCode != 4) {
-			// 仕入先別マスタ
-			$sql += "
-				and CODE in (
-					select distinct
-						ITEM_CODE
-					from
-						ITEMS_SUPPLIER
-					where
-						1 = 1
-			";
-			if ($supplierCode != null && $supplierCode != "") {
-				$sql += " and SUPPLIER_CODE = ? ";
-				$param[] = $customerCode;
-			}
-			$sql += "
-				)
-			";
-		}
-		$sql += "
+		$sql = $sql . "
 			order by
 				SORT_ORDER
 		";
@@ -628,104 +751,179 @@ class MasterController extends Controller {
 		//---------------------------------------------------------------------
 		$code         		= $request->input("code") ?? "0";
 		$hCode            = $request->input("hCode") ?? "0";
+		// ↓2026/03/31_hash-shi_融通変換対応------------------------------
+		$officeCode       = $request->input("officeCode");
+		$officeCodeF      = $request->input("officeCodeF");
+		$officeCodeT      = $request->input("officeCodeT");
+		// ↑2026/03/31_hash-shi_融通変換対応------------------------------
 		$customerCode     = $request->input("customerCode");
 		$deliveryCode     = $request->input("deliveryCode");
 		$supplierCode     = $request->input("supplierCode");
 
 		$sql = "
-			select
-				CODE,
-				NAME,
-				HNAME,
-				SORT_ORDER,
-				WEIGHT,
-				QTY_PER_CTN,
-				UNIT,
-				RATE1,
-				RATE2,
-				RATE3,
-				GCODE1,
-				GCODE2,
-				GCODE3,
-				GNAME1,
-				GNAME2,
-				GNAME3,
-				STEPS_CODE1,
-				STEPS_CODE2,
-				STEPS_CODE3,
-				STEPS1,
-				STEPS2,
-				STEPS3,
-				HEIGHT,
-				MARGIN,
-				IMAGE,
-				ON_NOT_STOCK,
-				ON_PRINT,
-				ON_NOT_USE,
-				ON_IMAGE,
-				ON_KEEP,
-				COMPANY_CODE,
-				COMPANY_NAME,
-				WAREHOUSE_CODE,
-				WAREHOUSE_NAME
-				SUPPLIER,
-				PROPER,
-				ORDER_FLG,
-				MEMO
-			from
-				ITEMS
-			where
-				1 = 1
-			and CODE = ?
+		select
+			CODE,
+			NAME,
+			HNAME,
+			SORT_ORDER,
+			WEIGHT,
+			QTY_PER_CTN,
+			UNIT,
+			RATE1,
+			RATE2,
+			RATE3,
+			GCODE1,
+			GCODE2,
+			GCODE3,
+			GNAME1,
+			GNAME2,
+			GNAME3,
+			STEPS_CODE1,
+			STEPS_CODE2,
+			STEPS_CODE3,
+			STEPS1,
+			STEPS2,
+			STEPS3,
+			HEIGHT,
+			MARGIN,
+			IMAGE,
+			ON_NOT_STOCK,
+			ON_PRINT,
+			ON_NOT_USE,
+			ON_IMAGE,
+			ON_KEEP,
+			COMPANY_CODE,
+			COMPANY_NAME,
+			WAREHOUSE_CODE,
+			WAREHOUSE_NAME
+			SUPPLIER,
+			PROPER,
+			ORDER_FLG,
+			MEMO
+		from
+			ITEMS
 		";
-		$param[] = $code;
+
+		// ↓2026/03/31_hash-shi_融通変換対応------------------------------
+		if ($hCode == 4 || $hCode == 5 || $hCode == 6) {
+
+			// 融通の場合のみ変換マスタ使用する。
+
+			// 融通変換マスタ
+			$sql_ = "
+			inner join (
+				select
+					ITEM_CODE_F
+					,ITEM_CODE_T
+				from
+					ITEMS_TRANSFER
+				where
+					1 = 1
+				and OFFICE_CODE_F = ?
+				and OFFICE_CODE_T = ?
+			) T
+			";
+			$param[] = $officeCodeF;
+			$param[] = $officeCodeT;
+
+			if ($officeCode == $officeCodeF) {
+				// 融通元からログインしている場合は、融通元で変換する。
+				$sql_ = $sql_ . " on T.ITEM_CODE_F = CODE ";
+			} else {
+				// それ以外は融通先で変換する。
+				$sql_ = $sql_ . " on T.ITEM_CODE_T = CODE ";
+			}
+
+			$sql = $sql . $sql_;
+		} 
+		// ↑2026/03/31_hash-shi_融通変換対応------------------------------
 
 		// 売上or仕入で分岐する。
 		if ($hCode == 1 || $hCode == 4) {
+
 			// 得意先別納入先別マスタ
-			$sql = $sql . "
-				and CODE in (
-					select distinct
-						ITEM_CODE
-					from
-						ITEMS_CUSTOMER
-					where
-						1 = 1
+			$sql_ = "
+			inner join (
+				select distinct 
+					ITEM_CODE
+				from
+					ITEMS_CUSTOMER
+				where
+					1 = 1
 			";
+
 			if ($customerCode != null && $customerCode != "") {
-				$sql = $sql . " and CUSTOMER_CODE = ? ";
+				$sql_ = $sql_ . " and CUSTOMER_CODE = ? ";
 				$param[] = $customerCode;
 			}
 			if ($deliveryCode != null && $deliveryCode != "") {
-				$sql = $sql . " and (DELIVERY_CODE = ? or DELIVERY_CODE is null) ";
+				$sql_ = $sql_ . " and (DELIVERY_CODE = ? or DELIVERY_CODE is null) ";
 				$param[] = $deliveryCode;
 			}
-			$sql = $sql . "
-				)
+
+			$sql_ = $sql_ . "
+			) C
 			";
-		} else if ($hCode != 1 && $hCode != 4) {
-			// 仕入先別マスタ
-			$sql = $sql . "
-				and CODE in (
-					select distinct
-						ITEM_CODE
-					from
-						ITEMS_SUPPLIER
-					where
-						1 = 1
-			";
-			if ($supplierCode != null && $supplierCode != "") {
-				$sql = $sql . " and SUPPLIER_CODE = ? ";
-				$param[] = $supplierCode;
+
+			if ($hCode == 4 || $hCode == 5 || $hCode == 6) {
+				// 融通の場合、融通先の商品コードと連結する。
+				$sql_ = $sql_ . " on C.ITEM_CODE = T.ITEM_CODE_T ";
+			} else {
+				// 融通以外の場合、商品コードと連結する。
+				$sql_ = $sql_ . " on C.ITEM_CODE = ITEMS.CODE ";
 			}
-			$sql = $sql . "
-				)
+
+			$sql = $sql . $sql_;
+
+		} else if ($hCode != 1 && $hCode != 4) {
+
+			// 仕入先別マスタ
+			$sql_ = "
+			inner join (
+				select distinct 
+					ITEM_CODE
+				from
+					ITEMS_SUPPLIER
+				where
+					1 = 1
 			";
+
+			if ($supplierCode != null && $supplierCode != "") {
+				$sql_ = $sql_ . " and SUPPLIER_CODE = ? ";
+				$param[] = $customerCode;
+			}
+
+			$sql_ = $sql_ . "
+			) S
+			";
+
+			if ($hCode == 4 || $hCode == 5 || $hCode == 6) {
+				// 融通の場合、融通先の商品コードと連結する。
+				$sql_ = $sql_ . " on S.ITEM_CODE = T.ITEM_CODE_T ";
+			} else {
+				// 融通以外の場合、商品コードと連結する。
+				$sql_ = $sql_ . " on S.ITEM_CODE = ITEMS.CODE ";
+			}
+
+			$sql = $sql . $sql_;
+
 		}
+		// ↑2026/03/31_hash-shi_融通変換対応------------------------------
+
 		$sql = $sql . "
-			order by
-				SORT_ORDER
+		where
+			1 = 1
+		and CODE = ?
 		";
+
+		$param[] = $code;
+
+		$sql = $sql . "
+		order by
+			SORT_ORDER
+		";
+
+		// logger($sql);
 
 		$record = DB::select($sql, $param);
 		$record = json_decode(json_encode($record), true);
@@ -987,7 +1185,8 @@ class MasterController extends Controller {
 		// パラメータ取得
 		//---------------------------------------------------------------------
 		$code         = $request->input("code") ?? "0";
-		$companyCode	= $request->input("companyCode");
+		$companyCode	= $request->input("companyCode");		// 自営業所
+		$companyCode_	= $request->input("companyCode_");	// 相手先営業所
 
 		$sql = "
 			select
@@ -1001,9 +1200,16 @@ class MasterController extends Controller {
 		// コード
 		$param[] = $code;
 	
-		if ($companyCode != null && $companyCode != "") {
+		if (($companyCode != null && $companyCode != "") && ($companyCode_ != null && $companyCode_ != "")) {
+			$sql = $sql . " and (COMPANY_CODE = ? or COMPANY_CODE = ?) ";
+			$param[] = $companyCode;
+			$param[] = $companyCode_;
+		} else if ($companyCode != null && $companyCode != "") {
 			$sql = $sql . " and COMPANY_CODE = ? ";
 			$param[] = $companyCode;
+		} else if ($companyCode_ != null && $companyCode_ != "") {
+			$sql = $sql . " and COMPANY_CODE = ? ";
+			$param[] = $companyCode_;
 		}
 
 		$sql = $sql . "

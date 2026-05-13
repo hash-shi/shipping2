@@ -134,13 +134,28 @@
     <input type="time" v-bind:disabled="!(sihRecord.DELIVERY_AMPM==1||sihRecord.DELIVERY_AMPM==2)" v-model="sihRecord.DELIVERY_TIME" :ref="'deliveryTime'" @keyup.enter="moveToNextField('deliveryTime')">
     </div>
   </div>
-  <!-- <div class="tv">
+  <!-- 
+  <div class="tv">
     <div class="title w200">在庫調整指示Noの最後</div>
     <div class="value">
     <input type="text" size="10" v-bind:disabled="true" v-model="adjustNo">
     </div>
-  </div> -->
+  </div>
+   -->
   <br />
+  
+  <!-- 
+  <div>
+    <div class="tv">
+      <div class="title">自営業所</div>
+      <div class="value">
+        <input type="text" autocomplete="off" size="6" disabled id="officesCode" v-model="sihRecord.OFFICE_CODE">
+        <input type="text" autocomplete="off" size="50" disabled v-model="sihRecord.OFFICE_NAME">
+      </div>
+    </div>
+    <br />
+  </div>
+  -->
 
   <!-- 融通の場合のみ表示 -->
   <div v-if="sihRecord.HCODE==4 || sihRecord.HCODE==5 || sihRecord.HCODE==6">
@@ -334,7 +349,7 @@
         <tr v-for="(sidRecord, index) of sidRecords" :key="index">
           <td>{{ index + 1 }}</td>
           <td>
-            <input type="text" autocomplete="off" v-model="sidRecord.HCODE" list="hcodeD" class="w40" :ref="'hcode_' + index" @keyup.enter="moveToNextField('hcode_' + index)">
+            <input type="text" autocomplete="off" v-model="sidRecord.HCODE" v-on:change="hcodeDBlur(index)" list="hcodeD" class="w40" :ref="'hcode_' + index" @keyup.enter="moveToNextField('hcode_' + index)">
             <datalist id="hcodeD">
             <option v-for="hcodeD in master.HCodesD" :key="hcodeD.CODE" :value="hcodeD.CODE">{{ hcodeD.CODE }} {{ hcodeD.NAME }}</option>
             </datalist>
@@ -438,31 +453,96 @@
     </div>
   </div>
   </div>
+
   <!-- 得意先 -->
-  <CustomerSearchDialog  v-if="showDialog.CustomerSearch"          :officeCode="this.officeCode"           :hCode="String(sihRecord.HCODE)"                         @close="closeDialog('CustomerSearch')"  @select="selectCustomerDialog"  ></CustomerSearchDialog>
+  <CustomerSearchDialog v-if="showDialog.CustomerSearch"
+    :officeCode="sihRecord.OFFICE_CODE"
+    :hCode="String(sihRecord.HCODE)"
+    @close="closeDialog('CustomerSearch')"
+    @select="selectCustomerDialog">
+  </CustomerSearchDialog>
+
   <!-- 納入先 -->
-  <DeliverySearchDialog  v-if="showDialog.DeliverySearchDelivery"  :officeCode="this.officeCode"           :hCode="String(sihRecord.HCODE)" :customerCode="sihRecord.CUSTOMER_CODE" @close="closeDialog('DeliverySearchDelivery')"  @select="selectDeliveryDialog"  ></DeliverySearchDialog>
+  <DeliverySearchDialog v-if="showDialog.DeliverySearchDelivery"
+    :officeCode="sihRecord.OFFICE_CODE"
+    :hCode="String(sihRecord.HCODE)"
+    :customerCode="sihRecord.CUSTOMER_CODE"
+    @close="closeDialog('DeliverySearchDelivery')"
+    @select="selectDeliveryDialog">
+  </DeliverySearchDialog>
+
   <!-- 倉庫 -->
-  <WarehouseSearchDialog v-if="showDialog.WarehouseSearchDelivery" :officeCode="this.getOfficeOtherCode()" :hCode="String(sihRecord.HCODE)"                  @close="closeDialog('WarehouseSearchDelivery')" @select="selectDeliveryDialog" ></WarehouseSearchDialog>
+  <!-- 融通の場合、相手先営業所を引数にする -->
+  <WarehouseSearchDialog v-if="showDialog.WarehouseSearchDelivery"
+    :officeCode="this.getOfficeOtherCode()"
+    :hCode="String(sihRecord.HCODE)"
+    @close="closeDialog('WarehouseSearchDelivery')"
+    @select="selectDeliveryDialog">
+  </WarehouseSearchDialog>
 
   <!-- 仕入先 -->
-  <SupplierSearchDialog  v-if="showDialog.SupplierSearch"          :officeCode="this.getOfficeOtherCode()" :hCode="String(sihRecord.HCODE)"                      @close="closeDialog('SupplierSearch')"  @select="selectSupplierDialog"  ></SupplierSearchDialog>
+  <!-- 融通の場合、相手先営業所を引数にする -->
+  <SupplierSearchDialog v-if="showDialog.SupplierSearch"
+    :officeCode="this.getOfficeOtherCode()" 
+    :hCode="String(sihRecord.HCODE)"
+    @close="closeDialog('SupplierSearch')"
+    @select="selectSupplierDialog">
+  </SupplierSearchDialog>
+
   <!-- 倉庫 -->
-  <WarehouseSearchDialog v-if="showDialog.WarehouseSearch"         :officeCode="this.getOfficeOtherCode()" :hCode="String(sihRecord.HCODE)"                      @close="closeDialog('WarehouseSearch')" @select="selectWarehouseDialog" ></WarehouseSearchDialog>
+  <!-- 融通の場合、相手先営業所を引数にする -->
+  <WarehouseSearchDialog v-if="showDialog.WarehouseSearch"
+    :officeCode="this.getOfficeOtherCode()"
+    :hCode="String(sihRecord.HCODE)"
+    @close="closeDialog('WarehouseSearch')"
+    @select="selectWarehouseDialog">
+  </WarehouseSearchDialog>
+
   <!-- 運転手 -->
-  <DriverSearchDialog    v-if="showDialog.DriverSearch"            :officeCode="this.officeCode" :officeOtherCode="this.getOfficeOtherCode()" :hCode="String(sihRecord.HCODE)"     @close="closeDialog('DriverSearch')"  @select="selectDriverDialog"  ></DriverSearchDialog>
+  <!-- 自営業所と相手先営業所のどちらかに該当するユーザ -->
+  <DriverSearchDialog v-if="showDialog.DriverSearch"
+    :officeCode="sihRecord.OFFICE_CODE"
+    :officeOtherCode="this.getOfficeOtherCode()"
+    :hCode="String(sihRecord.HCODE)"
+    @close="closeDialog('DriverSearch')"
+    @select="selectDriverDialog">
+  </DriverSearchDialog>
 
   <!-- 商品 -->
-  <ItemSearchDialog      v-if="showDialog.ItemSearch"    :searchHcode="String(sihRecord.HCODE)" :searchCustomerCode="sihRecord.CUSTOMER_CODE" :searchDeliveryCode="sihRecord.DELIVERY_CODE" :searchSupplierCode="sihRecord.SUPPLIER_CODE" @close="closeDialog('ItemSearch')"    @select="selectItemDialog"    ></ItemSearchDialog>
+  <!-- 融通元(相手先営業所)を引数にする -->
+  <!-- 融通先(自営業所)を引数にする -->
+  <ItemSearchDialog v-if="showDialog.ItemSearch"
+    :hcode="String(sihRecord.HCODE)"
+    :officeCode="this.officeCode"
+    :officeCodeF="this.getOfficeOtherCode()"
+    :officeCodeT="sihRecord.OFFICE_CODE"
+    :customerCode="sihRecord.CUSTOMER_CODE"
+    :deliveryCode="sihRecord.DELIVERY_CODE"
+    :supplierCode="sihRecord.SUPPLIER_CODE"
+    @close="closeDialog('ItemSearch')"
+    @select="selectItemDialog">
+  </ItemSearchDialog>
 
   <!-- 営業所(相手先) -->
-  <OfficeSearchDialog    v-if="showDialog.OfficeOtherSearch"                                                       @close="closeDialog('OfficeOtherSearch')"  @select="selectOfficeOtherDialog"  ></OfficeSearchDialog>
+  <OfficeSearchDialog v-if="showDialog.OfficeOtherSearch"
+    @close="closeDialog('OfficeOtherSearch')"
+    @select="selectOfficeOtherDialog">
+  </OfficeSearchDialog>
 
   <!-- 営業所(運賃負担) -->
-  <OfficeSearchDialog    v-if="showDialog.OfficeFeeSearch"                                                         @close="closeDialog('OfficeFeeSearch')"    @select="selectOfficeFeeDialog"  ></OfficeSearchDialog>
+  <OfficeSearchDialog v-if="showDialog.OfficeFeeSearch"
+    @close="closeDialog('OfficeFeeSearch')"
+    @select="selectOfficeFeeDialog">
+  </OfficeSearchDialog>
 
   <!-- 複写 -->
-  <InputShippingDialog   v-if="showDialog.InputShippingCp" @close="closeDialog('InputShippingCp')" @complete="copyDetail"  :mode="'copy'"  :hCode="String(sihRecord.HCODE)" :baseSihId="sihRecord.SIH_ID" ></InputShippingDialog>
+  <InputShippingDialog v-if="showDialog.InputShippingCp"
+    @close="closeDialog('InputShippingCp')"
+    @complete="copyDetail"
+    :mode="'copy'" 
+    :hCode="String(sihRecord.HCODE)"
+    :baseSihId="sihRecord.SIH_ID">
+  </InputShippingDialog>
 
 </div>
 </template>
@@ -564,6 +644,7 @@ export default {
       //初期得意先の設定
       this.origin = {
         'OfficeOtherCode': this.sihRecord.OFFICE_OTHER_CODE,
+        'OfficeFeeCode': this.sihRecord.OFFICE_FEE_CODE,
         'CustomerCode': this.sihRecord.CUSTOMER_CODE,
         'DeliveryCode': this.sihRecord.DELIVERY_CODE,
         'SupplierCode': this.sihRecord.SUPPLIER_CODE,
@@ -630,6 +711,8 @@ export default {
       await this.deliveryBlur();
       await this.supplierC2N();
       await this.supplierBlur();
+      await this.officeFeeC2N();
+      await this.officeFeeBlur();
 
       // 初期フォーカスの設定
       this.setNextField();
@@ -940,29 +1023,34 @@ export default {
       return result;
     },
     // 運送会社
-    getTruckerName: async function (truckerCode, companyCode){
+    getTruckerName: async function (truckerCode, companyCode, companyCode_){
       var result = "";
-      await axios.post("/api/master/getTruckerName", { 'code': truckerCode, 'companyCode': companyCode }).then(response => { result = response.data; });
+      await axios.post("/api/master/getTruckerName", { 'code': truckerCode, 'companyCode': companyCode, 'companyCode_': companyCode_ }).then(response => { result = response.data; });
       return result;
     },
     // 運転手
-    getDriverName: async function (driverCode, truckerCode, companyCode){
+    getDriverName: async function (driverCode, truckerCode, companyCode, companyCode_){
       var result = "";
-      await axios.post("/api/master/getDriverName", { 'code': driverCode, 'truckerCode': truckerCode, 'companyCode': companyCode }).then(response => { result = response.data; });
+      await axios.post("/api/master/getDriverName", { 'code': driverCode, 'truckerCode': truckerCode, 'companyCode': companyCode, 'companyCode_': companyCode_ }).then(response => { result = response.data; });
       return result;
     },
     // 特殊処理、運転手コードから運送会社コードを取得
-    getDriverTrucker: async function (driverCode, truckerCode, companyCode){
+    getDriverTrucker: async function (driverCode, truckerCode, companyCode, companyCode_){
       var result = "";
-      await axios.post("/api/master/getDriverTrucker", { 'code': driverCode, 'truckerCode': truckerCode, 'companyCode': companyCode }).then(response => { result = response.data; });
+      await axios.post("/api/master/getDriverTrucker", { 'code': driverCode, 'truckerCode': truckerCode, 'companyCode': companyCode, 'companyCode_': companyCode_ }).then(response => { result = response.data; });
       return result;
     },
     // 商品情報
-    getItemData: async function (itemCode, hCode, customerCode, deliveryCode, supplierCode){
+    getItemData: async function (itemCode, hCode, officeCodeF, officeCodeT, customerCode, deliveryCode, supplierCode){
       var result = "";
       await axios.post("/api/master/getItemData", { 
         'code': itemCode,
         'hCode': hCode,
+        // ↓2026/03/31_hash-shi_融通変換対応------------------------------
+        'officeCode': this.officeCode,
+        'officeCodeF': officeCodeF,
+        'officeCodeT': officeCodeT,
+        // ↑2026/03/31_hash-shi_融通変換対応------------------------------
         'customerCode': customerCode,
         'deliveryCode': deliveryCode,
         'supplierCode': supplierCode,
@@ -980,7 +1068,14 @@ export default {
     // 相手営業所取得
     //-------------------------------------------------------------------------
     getOfficeOtherCode: function (){
-      return (this.sihRecord.OFFICE_OTHER_CODE??this.officeCode);
+      // 融通以外は自営業所を返す
+      if (this.sihRecord.HCODE!=4 && this.sihRecord.HCODE!=5 && this.sihRecord.HCODE!=6) {
+        return this.sihRecord.OFFICE_CODE;
+      }
+      if (!this.sihRecord.OFFICE_OTHER_CODE) {
+        return this.sihRecord.OFFICE_CODE;
+      }
+      return this.sihRecord.OFFICE_OTHER_CODE;
     },
 
     //-------------------------------------------------------------------------
@@ -1019,7 +1114,7 @@ export default {
     },
 
     //-------------------------------------------------------------------------
-    // 相手営業所関連
+    // 運賃負担営業所関連
     //-------------------------------------------------------------------------
     // キー入力
     officeFeeC2N: async function (){
@@ -1036,15 +1131,15 @@ export default {
     officeFeeBlur: async function(){
       // 変更がある場合のみ処理
       if (this.origin.OfficeFeeCode == this.sihRecord.OFFICE_FEE_CODE) return;
-      // 仕入先/倉庫/運転手をクリアする。
-      this.sihRecord.SUPPLIER_CODE = "";
-      this.sihRecord.SUPPLIER_NAME = "";
-      this.sihRecord.WAREHOUSE_CODE = "";
-      this.sihRecord.WAREHOUSE_NAME = "";
-      this.sihRecord.DRIVER_CODE = "";
-      this.sihRecord.DRIVER_NAME = "";
-      this.sihRecord.TRUCKER_CODE = "";
-      this.sihRecord.TRUCKER_NAME = "";
+      // // 仕入先/倉庫/運転手をクリアする。
+      // this.sihRecord.SUPPLIER_CODE = "";
+      // this.sihRecord.SUPPLIER_NAME = "";
+      // this.sihRecord.WAREHOUSE_CODE = "";
+      // this.sihRecord.WAREHOUSE_NAME = "";
+      // this.sihRecord.DRIVER_CODE = "";
+      // this.sihRecord.DRIVER_NAME = "";
+      // this.sihRecord.TRUCKER_CODE = "";
+      // this.sihRecord.TRUCKER_NAME = "";
       // 名称取得
       this.sihRecord.OFFICE_FEE_NAME = await this.getOfficeName(this.sihRecord.OFFICE_FEE_CODE)
       // 変更値を格納
@@ -1072,7 +1167,7 @@ export default {
 
       // 営業所コードがない場合は付け足す
       if (1 <= (this.sihRecord.CUSTOMER_CODE??"").length && (this.sihRecord.CUSTOMER_CODE??"").length <= 4){
-        this.sihRecord.CUSTOMER_CODE = this.officeCode + this.sihRecord.CUSTOMER_CODE.padStart(4, '0');
+        this.sihRecord.CUSTOMER_CODE = this.sihRecord.OFFICE_CODE + this.sihRecord.CUSTOMER_CODE.padStart(4, '0');
       }
       // 変更がある場合のみ処理
       if (this.origin.CustomerCode == this.sihRecord.CUSTOMER_CODE) return;
@@ -1133,7 +1228,7 @@ export default {
 
       // 営業所コードがない場合は付け足す
       if (1 <= (this.sihRecord.DELIVERY_CODE??"").length && (this.sihRecord.DELIVERY_CODE??"").length <= 4){
-        this.sihRecord.DELIVERY_CODE = this.officeCode + this.sihRecord.DELIVERY_CODE.padStart(4, '0');
+        this.sihRecord.DELIVERY_CODE = this.sihRecord.OFFICE_CODE + this.sihRecord.DELIVERY_CODE.padStart(4, '0');
       }
       // 変更がある場合のみ処理
       if (this.origin.DeliveryCode == this.sihRecord.DELIVERY_CODE) return;
@@ -1192,7 +1287,7 @@ export default {
 
       // 営業所コードがない場合は付け足す
       if (1 <= (this.sihRecord.SUPPLIER_CODE??"").length && (this.sihRecord.SUPPLIER_CODE??"").length <= 4){
-        this.sihRecord.SUPPLIER_CODE = this.officeCode + this.sihRecord.SUPPLIER_CODE.padStart(4, '0');
+        this.sihRecord.SUPPLIER_CODE = this.getOfficeOtherCode() + this.sihRecord.SUPPLIER_CODE.padStart(4, '0');
       }
       // 変更がある場合のみ処理
       if (this.origin.SupplierCode == this.sihRecord.SUPPLIER_CODE) return;
@@ -1222,7 +1317,7 @@ export default {
     warehouseBlur: async function(){
       // 営業所コードがない場合は付け足す
       if (1 <= (this.sihRecord.WAREHOUSE_CODE??"").length && (this.sihRecord.WAREHOUSE_CODE??"").length <= 4){
-        this.sihRecord.WAREHOUSE_CODE = this.officeCode + this.sihRecord.WAREHOUSE_CODE.padStart(4, '0');
+        this.sihRecord.WAREHOUSE_CODE = this.getOfficeOtherCode() + this.sihRecord.WAREHOUSE_CODE.padStart(4, '0');
       }
       // 変更がある場合のみ処理
       if (this.origin.WarehouseCode == this.sihRecord.WAREHOUSE_CODE) return;
@@ -1251,9 +1346,9 @@ export default {
       // 元値を新しい値に変更する
       this.origin.DriverCode = this.sihRecord.DRIVER_CODE;
       // 名称取得
-      this.sihRecord.DRIVER_NAME = await this.getDriverName(this.sihRecord.DRIVER_CODE, this.sihRecord.TRUCKER_CODE, this.officeCode);
-      this.sihRecord.TRUCKER_CODE = await this.getDriverTrucker(this.sihRecord.DRIVER_CODE, this.sihRecord.TRUCKER_CODE, this.officeCode);
-      this.sihRecord.TRUCKER_NAME = await this.getTruckerName(this.sihRecord.TRUCKER_CODE, this.officeCode);
+      this.sihRecord.DRIVER_NAME = await this.getDriverName(this.sihRecord.DRIVER_CODE, this.sihRecord.TRUCKER_CODE, this.sihRecord.OFFICE_CODE, this.getOfficeOtherCode());
+      this.sihRecord.TRUCKER_CODE = await this.getDriverTrucker(this.sihRecord.DRIVER_CODE, this.sihRecord.TRUCKER_CODE, this.sihRecord.OFFICE_CODE, this.getOfficeOtherCode());
+      this.sihRecord.TRUCKER_NAME = await this.getTruckerName(this.sihRecord.TRUCKER_CODE, this.sihRecord.OFFICE_CODE, this.getOfficeOtherCode());
     },
     // フォーカスアウト
     driverBlur: async function(){
@@ -1266,11 +1361,26 @@ export default {
       // 元値を新しい値に変更する
       this.origin.DriverCode = this.sihRecord.DRIVER_CODE;
       // 名称取得
-      this.sihRecord.DRIVER_NAME = await this.getDriverName(this.sihRecord.DRIVER_CODE, this.sihRecord.TRUCKER_CODE, this.officeCode);
-      this.sihRecord.TRUCKER_CODE = await this.getDriverTrucker(this.sihRecord.DRIVER_CODE, this.sihRecord.TRUCKER_CODE, this.officeCode);
-      this.sihRecord.TRUCKER_NAME = await this.getTruckerName(this.sihRecord.TRUCKER_CODE, this.officeCode);
+      this.sihRecord.DRIVER_NAME = await this.getDriverName(this.sihRecord.DRIVER_CODE, this.sihRecord.TRUCKER_CODE, this.sihRecord.OFFICE_CODE, this.getOfficeOtherCode());
+      this.sihRecord.TRUCKER_CODE = await this.getDriverTrucker(this.sihRecord.DRIVER_CODE, this.sihRecord.TRUCKER_CODE, this.sihRecord.OFFICE_CODE, this.getOfficeOtherCode());
+      this.sihRecord.TRUCKER_NAME = await this.getTruckerName(this.sihRecord.TRUCKER_CODE, this.sihRecord.OFFICE_CODE, this.getOfficeOtherCode());
       // 
       this.driverC2N();
+    },
+
+    //-------------------------------------------------------------------------
+    // 取引区分関連
+    //-------------------------------------------------------------------------
+    hcodeDBlur: async function (index){
+      // 
+      var SAMPLE = "";
+      var hcodeD = this.sidRecords[index].HCODE;
+      for (var i = 0; i < this.master.HCodesD.length; i++) {
+        if (hcodeD == this.master.HCodesD[i].CODE) {
+          SAMPLE = this.master.HCodesD[i].SAMPLE;
+        }
+      }
+      this.sidRecords[index].SAMPLE = SAMPLE;
     },
 
     //-------------------------------------------------------------------------
@@ -1285,7 +1395,9 @@ export default {
       // 変更がある場合のみ処理
       if (this.origin.ItemCode[index] == this.sidRecords[index].ITEM_CODE) return;
       // 名称,入数,袋数,数量
-      var itemData = await this.getItemData(this.sidRecords[index].ITEM_CODE, this.sihRecord.HCODE, this.sihRecord.CUSTOMER_CODE, this.sihRecord.DELIVERY_CODE, this.sihRecord.SUPPLIER_CODE);
+      // var itemData = await this.getItemData(this.sidRecords[index].ITEM_CODE, this.sihRecord.HCODE, this.sihRecord.CUSTOMER_CODE, this.sihRecord.DELIVERY_CODE, this.sihRecord.SUPPLIER_CODE);
+      //var itemData = await this.getItemData(this.sidRecords[index].ITEM_CODE, this.sihRecord.HCODE, null, null, null);
+      var itemData = await this.getItemData(this.sidRecords[index].ITEM_CODE, this.sihRecord.HCODE, this.getOfficeOtherCode(), this.sihRecord.OFFICE_CODE, this.sihRecord.CUSTOMER_CODE, this.sihRecord.DELIVERY_CODE, this.sihRecord.SUPPLIER_CODE);
       this.sidRecords[index]["items_rel"] = itemData;
 
       if (this.sidRecords[index]["items_rel"] != null && this.sidRecords[index]["items_rel"] != "") {

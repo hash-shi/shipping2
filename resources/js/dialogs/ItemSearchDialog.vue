@@ -12,7 +12,7 @@
         <div class="dialogBody">
           <div class="searchArea">
             <!-- 20220720_hash-shi_得意先・納入先の絞り込み追加_str------------ -->
-
+            <!-- 通常売上/融通売上の場合 -->
             <div v-if="searchs.hcode == 1 || searchs.hcode == 4">
               <div class="tv">
                 <div class="title">得意先コード</div>
@@ -25,6 +25,7 @@
               </div>
               <br />
             </div>
+            <!-- 通常売上/融通売上以外の場合 -->
             <div v-if="searchs.hcode != 1 && searchs.hcode != 4">
               <div class="tv">
                 <div class="title">仕入先コード</div>
@@ -79,22 +80,32 @@
 export default {
   // 20220720_hash-shi_得意先・納入先の絞り込み追加_str------------
   props: {
-    searchHcode : String,
-    searchCustomerCode : String,
-    searchDeliveryCode : String,
-    searchSupplierCode : String,
+    hcode : String,
+    // ↓2026/03/31_hash-shi_融通変換対応------------------------------
+    officeCode  : String,
+    officeCodeF : String,
+    officeCodeT : String,
+    // ↑2026/03/31_hash-shi_融通変換対応------------------------------
+    customerCode : String,
+    deliveryCode : String,
+    supplierCode : String,
   },
   // 20220720_hash-shi_得意先・納入先の絞り込み追加_end------------
   data() {
     return {
       searchs: {
         'hcode': "",
+        // ↓2026/03/31_hash-shi_融通変換対応------------------------------
+        'officeCode':"",
+        'officeCodeF':"",
+        'officeCodeT':"",
+        // ↑2026/03/31_hash-shi_融通変換対応------------------------------
         'customerCode': "",
         'deliveryCode': "",
         'supplierCode': "",
         'itemCode': "",
         'itemName': "",
-        'onlyNull': false,
+        'like': false,
       },
       results: [],
       nextFields: [],
@@ -112,15 +123,20 @@ export default {
     //---------------------------------------------------------------------
     search: async function(){
       await axios.post("/api/master/items", {
-        'searchHcode'         : this.searchs.hcode,
+        'hcode'         : this.searchs.hcode,
+        // ↓2026/03/31_hash-shi_融通変換対応------------------------------
+        'officeCode'    : this.searchs.officeCode,
+        'officeCodeF'   : this.searchs.officeCodeF,
+        'officeCodeT'   : this.searchs.officeCodeT,
+        // ↑2026/03/31_hash-shi_融通変換対応------------------------------
         // 20220720_hash-shi_得意先・納入先の絞り込み追加_str------------
-        'searchCustomerCode'  : this.searchs.customerCode,
-        'searchDeliveryCode'  : this.searchs.deliveryCode,
-        'searchSupplierCode'  : this.searchs.supplierCode,
+        'customerCode'  : this.searchs.customerCode,
+        'deliveryCode'  : this.searchs.deliveryCode,
+        'supplierCode'  : this.searchs.supplierCode,
         // 20220720_hash-shi_得意先・納入先の絞り込み追加_end------------
-        'searchItemCode'      : this.searchs.itemCode,
-        'searchItemName'      : this.searchs.itemName,
-        'onlyNull'            : ((this.searchs.onlyNull) ? 1 : 0),
+        'itemCode'      : this.searchs.itemCode,
+        'itemName'      : this.searchs.itemName,
+        'like'          : ((this.searchs.like) ? 1 : 0),
       })
       .then(response => {
         this.results = response.data;
@@ -173,11 +189,16 @@ export default {
   //-------------------------------------------------------------------------
   mounted: async function(){
 
-    this.searchs.hcode = this.searchHcode;
-    this.searchs.customerCode = this.searchCustomerCode;
-    this.searchs.deliveryCode = this.searchDeliveryCode;
-    this.searchs.supplierCode = this.searchSupplierCode;
-
+    this.searchs.hcode = this.hcode;
+    // ↓2026/03/31_hash-shi_融通変換対応------------------------------
+    this.searchs.officeCode = this.officeCode;
+    this.searchs.officeCodeF = this.officeCodeF;
+    this.searchs.officeCodeT = this.officeCodeT;
+    // ↑2026/03/31_hash-shi_融通変換対応------------------------------
+    this.searchs.customerCode = this.customerCode;
+    this.searchs.deliveryCode = this.deliveryCode;
+    this.searchs.supplierCode = this.supplierCode;
+    
     await this.search();
     // Enter移動の設定をする
     this.setNextField();

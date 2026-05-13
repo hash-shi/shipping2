@@ -2,7 +2,7 @@
   <div>
     <div class="dialogBase">
       <div class="dialogBackground"></div>
-      <div class="dialogFrame">
+      <div class="dialogFrame" style="width:800px;height:610px;">
         <div class="dialogHeader">
           <div class="dialogTitle">
             運転手検索
@@ -51,18 +51,22 @@
             <table class="searchRecord">
               <thead>
                 <tr>
-                  <th class="w100 left">コード</th>
-                  <th class="left">名称</th>
                   <th class="left">運送会社コード</th>
                   <th class="left">運送会社名</th>
+                  <th class="w100 left">コード</th>
+                  <th class="left">名称</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(result, index) in results" :key="index">
-                  <td class="w100"><div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.CODE, result.TRUCKER_CODE, result.COMPANY_CODE)">{{ result.CODE }}</div></td>
-                  <td>{{ result.NAME }}</td>
-                  <td>{{ result.TRUCKER_CODE }}</td>
+                  <td>
+                    <div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.CODE, result.TRUCKER_CODE, result.COMPANY_CODE)">{{ result.TRUCKER_CODE }}</div>
+                  </td>
                   <td>{{ result.TRUCKER_NAME }}</td>
+                  <td class="w100">
+                    <div style="text-decoration: underline;cursor:pointer;" v-on:click="select(result.CODE, result.TRUCKER_CODE, result.COMPANY_CODE)">{{ result.CODE }}</div>
+                  </td>
+                  <td>{{ result.NAME }}</td>
                 </tr>
               </tbody>
             </table>

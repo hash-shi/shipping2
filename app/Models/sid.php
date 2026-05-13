@@ -42,6 +42,9 @@ class sid extends Model
     Public function qcodes_rel() {
         return  $this->hasOne(qcodes::class, 'CODE', 'QCODE');
     }
+    Public function hcodesd_rel() {
+        return  $this->hasOne(hcodesD::class, 'CODE', 'HCODE');
+    }
 
     //-------------------------------------------------------------------------
     // 連想配列追加定義
@@ -50,7 +53,8 @@ class sid extends Model
     //-------------------------------------------------------------------------
     Public static function syncRelationInfo(){
         return array(
-              'QNAME'=>'qcodes_rel:NAME'
+            'QNAME'=>'qcodes_rel:NAME',
+            'SAMPLE'=>'hcodesd_rel:SAMPLE'
         );
     }
 
