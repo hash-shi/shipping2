@@ -388,6 +388,8 @@ class ShippingController extends Controller
       $sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('SIH_ID', $sihId))->first());
       // $sihRecord = ProjectCommon::syncRelation('\App\Models\sih', ProjectCommon::getRelation('App\Models\sih', sih::where('ORDER_NO', $orderNo))->first());
 
+      // logger($sihRecord);
+
       if ($sihRecord['ORDER_TIME'] != null && $sihRecord['ORDER_TIME'] != "") {
         $sihRecord['ORDER_TIME'] = mb_substr($sihRecord['ORDER_TIME'], 0, 5);
       }
@@ -451,7 +453,7 @@ class ShippingController extends Controller
 
         // 個別の設定値
         // $sihRecord['DELIVERY_DATE'] = null;
-        // $sihRecord['LOADING_RATE']  = '1';
+        $sihRecord['LOADING_RATE']  = '1';
       } else {
         // 新規
         foreach ($sihColumns as $column) { $sihRecord[$column] = null;}
@@ -501,7 +503,7 @@ class ShippingController extends Controller
       $sihRecord['CONTINUED_SHEET']   = null;
       $sihRecord['ALL_SHEET']       	= null;
       $sihRecord['CURRENT_SHEET']     = null;
-      $sihRecord['LOADING_RATE']      = null;
+      // $sihRecord['LOADING_RATE']      = null;
       $sihRecord['INVOICE_NOTE']      = null;
       $sihRecord['DELIVERY_NOTE']     = null;
       $sihRecord['TAG_NOTE']       		= null;

@@ -384,7 +384,7 @@
             <input type="number" autocomplete="off" size="5" style="text-align:right;width:50px;" v-model="sidRecord.QTY_CTN" :ref="'qtyCtn_' + index" @keyup.enter="moveToNextField('qtyCtn_' + index)">
           </td>
           <td class="right">{{ sidRecord.QTY = (sidRecord.QTY_PER_CTN * sidRecord.QTY_CTN) == 0 ? "":(sidRecord.QTY_PER_CTN * sidRecord.QTY_CTN) | comma }}</td>
-          <td class="right showSmall">{{ sidRecord.QTY_CTN2 |decimalFormat }}</td>
+          <td class="right showSmall">{{ sidRecord.QTY_CTN2 | decimalFormat }}</td>
           <td class="right showSmall">{{ sidRecord.QTY2 = (sidRecord.QTY_CTN * sidRecord.QTY_CTN2) | decimalFormat }}</td>
           <td class="center">
             <select style="width:40px;" v-model="sidRecord.LOADING_PLACE_CODE" v-on:change="placeBlur(index)" :ref="'loadingPlaceCode_' + index" @keyup.enter="moveToNextField('loadingPlaceCode_' + index)">
@@ -406,7 +406,7 @@
           </tr>
           <tr>
           <td colspan=9></td>
-          <td><input type="text" autocomplete="off" class="showSmall" disabled name="" v-model="wariai"></td>
+          <td><input type="text" autocomplete="off" class="showSmall" disabled name="" v-model="this.wariai"></td>
           <td colspan=5></td>
         </tr>
       </tbody>
@@ -1406,11 +1406,14 @@ export default {
         this.sidRecords[index].QTY_CTN      = 1;
         // this.sidRecords[index].QTY          = (this.sidRecords[index].QTY_PER_CTN * this.sidRecords[index].QTY_CTN);
         if (this.sihRecord.LOADING_RATE == "1"){
-          this.sidRecords[index].QTY_CTN2   = this.sidRecords[index]["items_rel"].RATE1;
+          var RATE = this.sidRecords[index]["items_rel"].RATE1;
+          this.sidRecords[index].QTY_CTN2   = (RATE != null ? RATE : 0);
         } else if (this.sihRecord.LOADING_RATE == "2"){
-          this.sidRecords[index].QTY_CTN2   = this.sidRecords[index]["items_rel"].RATE2;
+          var RATE = this.sidRecords[index]["items_rel"].RATE2;
+          this.sidRecords[index].QTY_CTN2   = (RATE != null ? RATE : 0);
         } else if (this.sihRecord.LOADING_RATE == "3"){
-          this.sidRecords[index].QTY_CTN2   = this.sidRecords[index]["items_rel"].RATE3;
+          var RATE = this.sidRecords[index]["items_rel"].RATE3;
+          this.sidRecords[index].QTY_CTN2   = (RATE != null ? RATE : 0);
         }
         // this.sidRecords[index].QTY2         = (this.sidRecords[index].QTY_PER_CTN * this.sidRecords[index].QTY2);
       } else {
@@ -1728,7 +1731,7 @@ export default {
         var sidRecord = this.sidRecords[count];
         wariai = wariai + sidRecord.QTY2;
       }
-      return wariai.toFixed(1)
+      return wariai.toFixed(2)
     },
   },
 
@@ -1740,9 +1743,9 @@ export default {
 
   filters:{
     decimalFormat:function(value) {
-      if (!value) return ''
-      if(value == 0) return ''
-      return Number(value).toFixed(1);
+      if (!value) return 0
+      if (value == '' || value == null) return 0
+      return Number(value).toFixed(2);
     },
     decimalFormatZero:function(value) {
       if (!value) return 0
