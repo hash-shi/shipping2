@@ -520,7 +520,21 @@ class MasterController extends Controller {
 		if ($hcode == 1 || $hcode == 4) {
 			// 通常仕入/融通仕入の場合、得意先納入先で絞り込む
 			// 得意先別納入先別マスタ
-			$query->join('ITEMS_CUSTOMER', function($queryItems) use($hcode, $customerCode, $deliveryCode) {
+
+			// ITEMS_SUPPLIER のサブクエリ
+			$queryItemsCustomer = DB::table('ITEMS_CUSTOMER')->select('ITEM_CODE')->distinct();
+			// 得意先コード
+			if ($customerCode != null && $customerCode != "") {
+				$queryItemsCustomer->where('CUSTOMER_CODE', $customerCode);
+			}
+			// 納入先コード
+			$queryItemsCustomer->where(function ($queryDel) use($deliveryCode) {
+				if ($deliveryCode != null && $deliveryCode != "") {
+					$queryDel->where('DELIVERY_CODE', $deliveryCode)->orWhereNull('DELIVERY_CODE');
+				}
+			});
+
+			$query->joinSub($queryItemsCustomer, 'ITEMS_CUSTOMER', function($queryItems) use($hcode) {
 				if ($hcode == 4 || $hcode == 5 || $hcode == 6) {
 					// 融通の場合、融通先の商品コードと連結する。
 					$queryItems->on('ITEM_CODE', 'ITEM_CODE_T');
@@ -528,22 +542,19 @@ class MasterController extends Controller {
 					// 融通以外の場合、商品コードと連結する。
 					$queryItems->on('ITEM_CODE', 'CODE');
 				}
-				// 得意先コード
-				if ($customerCode != null && $customerCode != "") {
-					$queryItems->where('CUSTOMER_CODE', $customerCode);
-				}
-				// 納入先コード
-				$queryItems->where(function ($queryDel) use($deliveryCode) {
-					if ($deliveryCode != null && $deliveryCode != "") {
-						$queryDel->where('DELIVERY_CODE', $deliveryCode)->orWhereNull('DELIVERY_CODE');
-					}
-				});
-				$queryItems->distinct();
 			});
 		} else if ($hcode != 1 && $hcode != 4) {
 			// 通常仕入/融通仕入以外の場合、仕入先で絞り込む
 			// 仕入先別マスタ
-			$query->join('ITEMS_SUPPLIER', function($queryItems) use($hcode, $supplierCode) {
+			
+			// ITEMS_SUPPLIER のサブクエリ
+			$queryItemsSupplier = DB::table('ITEMS_SUPPLIER')->select('ITEM_CODE')->distinct();
+			// 仕入先コード
+			if ($supplierCode != null && $supplierCode != "") {
+				$queryItemsSupplier->where('SUPPLIER_CODE', $supplierCode);
+			}
+
+			$query->joinSub($queryItemsSupplier, 'ITEMS_SUPPLIER', function($queryItems) use($hcode) {
 				if ($hcode == 4 || $hcode == 5 || $hcode == 6) {
 					// 融通の場合、融通先の商品コードと連結する。
 					$queryItems->on('ITEM_CODE', 'ITEM_CODE_T');
@@ -551,11 +562,6 @@ class MasterController extends Controller {
 					// 融通以外の場合、商品コードと連結する。
 					$queryItems->on('ITEM_CODE', 'CODE');
 				}
-				// 仕入先コード
-				if ($supplierCode != null && $supplierCode != "") {
-					$queryItems->where('SUPPLIER_CODE', $supplierCode);
-				}
-				$queryItems->distinct();
 			});
 		}
 
@@ -890,7 +896,7 @@ class MasterController extends Controller {
 
 			if ($supplierCode != null && $supplierCode != "") {
 				$sql_ = $sql_ . " and SUPPLIER_CODE = ? ";
-				$param[] = $customerCode;
+				$param[] = $supplierCode;
 			}
 
 			$sql_ = $sql_ . "

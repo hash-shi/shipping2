@@ -405,9 +405,9 @@
           </td>
           </tr>
           <tr>
-          <td colspan=9></td>
-          <td><input type="text" autocomplete="off" class="showSmall" disabled name="" v-model="this.wariai"></td>
-          <td colspan=5></td>
+          <td colspan=10></td>
+          <td><input type="text" autocomplete="off" class="showSmall" disabled name="" v-model="wariai"></td>
+          <td colspan=4></td>
         </tr>
       </tbody>
     </table>
@@ -1743,8 +1743,8 @@ export default {
 
   filters:{
     decimalFormat:function(value) {
-      if (!value) return 0
-      if (value == '' || value == null) return 0
+      if (!value) return ''
+      if(value == 0) return ''
       return Number(value).toFixed(2);
     },
     decimalFormatZero:function(value) {

@@ -1020,8 +1020,10 @@ class ShippingController extends Controller
         
         // $html_data = preg_replace('/_QtyCtn2' . $i . '_/',      ($sidRecord['QTY_CTN2'] < 1 && $sidRecord['QTY_CTN2'] > 0 ? '0' . $sidRecord['QTY_CTN2'] : $sidRecord['QTY_CTN2']), $html_data); 
         // $html_data = preg_replace('/_Qty2' . $i . '_/',         ($sidRecord['QTY2'] < 1 &&   $sidRecord['QTY_CTN2'] > 0 ? '0' . $sidRecord['QTY2'] : $sidRecord['QTY2']),           $html_data); 
-        $html_data = preg_replace('/_QtyCtn2' . $i . '_/',      $sidRecord['QTY_CTN'],      $html_data);
-        $html_data = preg_replace('/_Qty2' . $i . '_/',         $sidRecord['QTY'],          $html_data);
+        // $html_data = preg_replace('/_QtyCtn2' . $i . '_/',      $sidRecord['QTY_CTN'],      $html_data);
+        // $html_data = preg_replace('/_Qty2' . $i . '_/',         $sidRecord['QTY'],          $html_data);
+        $html_data = preg_replace('/_QtyCtn2' . $i . '_/',      '', $html_data);
+        $html_data = preg_replace('/_Qty2' . $i . '_/',         '', $html_data);
 
         $html_data = preg_replace('/_LoadingPlaceCode' . $i . '_/', $sidRecord['LOADING_PLACE_CODE'],   $html_data);
         $html_data = preg_replace('/_LoadingPlaceName' . $i . '_/', $sidRecord['LOADING_PLACE_NAME'],   $html_data);

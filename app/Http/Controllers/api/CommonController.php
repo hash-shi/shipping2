@@ -159,7 +159,7 @@ class CommonController extends Controller
 
 		$sql = "
 		SELECT
-			(MAX(ORDER_NO) + 1) ORDER_NO
+			ISNULL((MAX(ORDER_NO) + 1), 900000) ORDER_NO
 		FROM
 			SIH
 		WHERE
