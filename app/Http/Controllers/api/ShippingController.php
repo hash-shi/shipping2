@@ -873,10 +873,10 @@ class ShippingController extends Controller
 
     if ($orderTime != null && $orderTime != "") {
       if ($orderAmPm == "AM") {
-        $html_data = preg_replace('/_orderMgn_/',       '-31px',         $html_data);
+        $html_data = preg_replace('/_orderMgn_/',       '-27px',         $html_data);
         $html_data = preg_replace('/_orderCircleDis_/', 'inline-block', $html_data);
       } else if ($orderAmPm == "PM") {
-        $html_data = preg_replace('/_orderMgn_/',       '-15px',         $html_data);
+        $html_data = preg_replace('/_orderMgn_/',       '-14px',         $html_data);
         $html_data = preg_replace('/_orderCircleDis_/', 'inline-block', $html_data);
       }
     } else {
@@ -891,11 +891,11 @@ class ShippingController extends Controller
 
     switch ($sihRecord['DELIVERY_AMPM']) {
       case 1:
-        $html_data = preg_replace('/_deliveryMgn_/',       '-31px',        $html_data);
+        $html_data = preg_replace('/_deliveryMgn_/',       '-27px',        $html_data);
         $html_data = preg_replace('/_deliveryCircleDis_/', 'inline-block', $html_data);
         break;
       case 2:
-        $html_data = preg_replace('/_deliveryMgn_/',       '-15px',        $html_data);
+        $html_data = preg_replace('/_deliveryMgn_/',       '-14px',        $html_data);
         $html_data = preg_replace('/_deliveryCircleDis_/', 'inline-block', $html_data);
         break;
       default:
@@ -931,7 +931,7 @@ class ShippingController extends Controller
       $html_data = preg_replace('/_fee_/',            number_format($sihRecord['FEE'],0,'',','),                                  $html_data);
       $html_data = preg_replace('/_addFeeTitle_/',    '付加',   $html_data);
       $html_data = preg_replace('/_addFee_/',         number_format($sihRecord['ADD_FEE'],0,'',','),                              $html_data);
-      $html_data = preg_replace('/_highwayFeeTitle_/','有料道路代',   $html_data);
+      $html_data = preg_replace('/_highwayFeeTitle_/','有料<br>道路代',   $html_data);
       $html_data = preg_replace('/_highwayFee_/',     number_format($sihRecord['HIGHWAY_FEE'],0,'',','),                          $html_data);
 
       // $html_data = preg_replace('/_feeClassMgnTitle1_/',  '運賃付替区分',   $html_data);
@@ -951,7 +951,7 @@ class ShippingController extends Controller
       // 		break;
       // }
 
-      $html_data = preg_replace('/_officeFeeTitle_/',  '運賃負担営業所',   $html_data);
+      $html_data = preg_replace('/_officeFeeTitle_/',  '運賃負担<br>営業所',   $html_data);
       $html_data = preg_replace('/_officeFeeCode_/',   $sihRecord['OFFICE_FEE_CODE'],   $html_data);
       $html_data = preg_replace('/_officeFeeName_/',   $sihRecord['OFFICE_FEE_NAME'],   $html_data);
 
@@ -1015,8 +1015,8 @@ class ShippingController extends Controller
         $html_data = preg_replace('/_Hcode' . $i . '_/',        $sidRecord['HCODE'],        $html_data);
         $html_data = preg_replace('/_itemCode' . $i . '_/',     $sidRecord['ITEM_CODE'],    $html_data);
         $html_data = preg_replace('/_QtyPerCtn' . $i . '_/',    $sidRecord['QTY_PER_CTN'],  $html_data);
-        $html_data = preg_replace('/_QtyCtn1' . $i . '_/',      $sidRecord['QTY_CTN'],      $html_data);
-        $html_data = preg_replace('/_Qty1' . $i . '_/',         $sidRecord['QTY'],          $html_data);
+        $html_data = preg_replace('/_QtyCtn1' . $i . '_/',      number_format($sidRecord['QTY_CTN'],0,'',','), $html_data);
+        $html_data = preg_replace('/_Qty1' . $i . '_/',         number_format($sidRecord['QTY'],0,'',','),     $html_data);
         
         // $html_data = preg_replace('/_QtyCtn2' . $i . '_/',      ($sidRecord['QTY_CTN2'] < 1 && $sidRecord['QTY_CTN2'] > 0 ? '0' . $sidRecord['QTY_CTN2'] : $sidRecord['QTY_CTN2']), $html_data); 
         // $html_data = preg_replace('/_Qty2' . $i . '_/',         ($sidRecord['QTY2'] < 1 &&   $sidRecord['QTY_CTN2'] > 0 ? '0' . $sidRecord['QTY2'] : $sidRecord['QTY2']),           $html_data); 
@@ -1042,8 +1042,10 @@ class ShippingController extends Controller
   
         if ($sidRecord['QTY_PER_CTN'] != null && $orgQtyPerCtn != $sidRecord['QTY_PER_CTN']) {
           $html_data = preg_replace('/_circle2' . $i . '_/', 'inline-block',  $html_data);
+          logger('/_circle2' . $i . '_/' . ':inline-block');
         } else {
           $html_data = preg_replace('/_circle2' . $i . '_/', 'none',          $html_data);
+          logger('/_circle2' . $i . '_/' . ':none');
         }
 
       } else {
