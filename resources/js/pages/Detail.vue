@@ -4,9 +4,11 @@
   <input type="button" value="メイン画面" :ref="'back'"  v-on:click="back">
 
   <input v-bind:disabled="(isNew&&!(sihRecord.STATUS==1||sihRecord.STATUS==2))" type="button" value="複写" v-on:click="copy" :ref="'copy'" @keyup.enter="copy">
-  <input v-bind:disabled="!(sihRecord.STATUS==0||sihRecord.STATUS==0||sihRecord.STATUS==99)" type="button" value="一時保存" v-on:click="susp" :ref="'susp'" @keyup.enter="susp">
-  <input v-bind:disabled="!(sihRecord.STATUS==0||sihRecord.STATUS==1||sihRecord.STATUS==3||sihRecord.STATUS==99)" type="button" class="awake" value="F10:入力確定" v-on:click="conf" :ref="'conf'" @keyup.enter="conf">
-  <input v-bind:disabled="!(sihRecord.STATUS==0||sihRecord.STATUS==1||sihRecord.STATUS==3||sihRecord.STATUS==99)" type="button" value="出荷完了" v-on:click="comp" :ref="'comp'" @keyup.enter="comp">
+  <!-- true=非活性 -->
+  <input v-bind:disabled="(sihRecord.KARI==0||!(sihRecord.STATUS==0||sihRecord.STATUS==0||sihRecord.STATUS==99))" type="button" value="一時保存" v-on:click="susp" :ref="'susp'" @keyup.enter="susp">
+  <input v-bind:disabled="(sihRecord.KARI==1||!(sihRecord.STATUS==0||sihRecord.STATUS==1||sihRecord.STATUS==3||sihRecord.STATUS==99))" type="button" class="awake" value="F10:入力確定" v-on:click="conf" :ref="'conf'" @keyup.enter="conf">
+  <input v-bind:disabled="(sihRecord.KARI==1||!(sihRecord.STATUS==0||sihRecord.STATUS==1||sihRecord.STATUS==3||sihRecord.STATUS==99))" type="button" value="出荷完了" v-on:click="comp" :ref="'comp'" @keyup.enter="comp">
+
   <input v-bind:disabled="(isNew&&!(sihRecord.STATUS==1||sihRecord.STATUS==3))" type="button" value="削除" v-on:click="del" :ref="'del'" @keyup.enter="del">
   <input v-bind:disabled="(isNew&&!(sihRecord.STATUS==1||sihRecord.STATUS==3))" type="button" value="指示書印刷" v-on:click="instructionPrint" :ref="'instructionPrint'" @keyup.enter="instructionPrint">
   <input v-bind:disabled="(isNew&&!(sihRecord.STATUS==1||sihRecord.STATUS==3))" type="button" value="伝票印刷" v-on:click="slipPrint" :ref="'slipPrint'" @keyup.enter="slipPrint">
@@ -68,7 +70,7 @@
   <div class="tv">
     <div class="title">指示書</div>
     <div class="value">
-    <label><input type="checkbox" name="check" v-model="sihRecord.KARI" :ref="'kari'" @keyup.enter="moveToNextField('kari')">仮</label>
+    <label><input type="checkbox" v-bind:disabled="!(sihRecord.STATUS==0||sihRecord.STATUS==0||sihRecord.STATUS==99)" name="check" v-model="sihRecord.KARI" :ref="'kari'" @keyup.enter="moveToNextField('kari')">仮</label>
     </div>
   </div>
 
@@ -1588,9 +1590,9 @@ export default {
 
       this.nextFields.push({ 'id':'back',       'disabled': false, });
       this.nextFields.push({ 'id':'copy',       'disabled': (this.isNew&&!(this.sihRecord.STATUS==1||this.sihRecord.STATUS==2)), });
-      this.nextFields.push({ 'id':'susp',       'disabled': !(this.sihRecord.STATUS==0||this.sihRecord.STATUS==0||this.sihRecord.STATUS==99), });
-      this.nextFields.push({ 'id':'conf',       'disabled': !(this.sihRecord.STATUS==0||this.sihRecord.STATUS==1||this.sihRecord.STATUS==99), });
-      this.nextFields.push({ 'id':'comp',       'disabled': !(this.sihRecord.STATUS==0||this.sihRecord.STATUS==1||this.sihRecord.STATUS==3||this.sihRecord.STATUS==99), });
+      this.nextFields.push({ 'id':'susp',       'disabled': (this.sihRecord.KARI==0||!(this.sihRecord.STATUS==0||this.sihRecord.STATUS==0||this.sihRecord.STATUS==99)), });
+      this.nextFields.push({ 'id':'conf',       'disabled': (this.sihRecord.KARI==1||!(this.sihRecord.STATUS==0||this.sihRecord.STATUS==1||this.sihRecord.STATUS==99)), });
+      this.nextFields.push({ 'id':'comp',       'disabled': (this.sihRecord.KARI==1||!(this.sihRecord.STATUS==0||this.sihRecord.STATUS==1||this.sihRecord.STATUS==3||this.sihRecord.STATUS==99)), });
       this.nextFields.push({ 'id':'del',        'disabled': (this.isNew&&!(this.sihRecord.STATUS==1||this.sihRecord.STATUS==3)), });
       this.nextFields.push({ 'id':'instructionPrint', 'disabled': (this.isNew&&!(this.sihRecord.STATUS==1||this.sihRecord.STATUS==3)), });
       this.nextFields.push({ 'id':'slipPrint',    'disabled': (this.isNew&&!(this.sihRecord.STATUS==1||this.sihRecord.STATUS==3)), });

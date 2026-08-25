@@ -473,8 +473,8 @@ class ShippingController extends Controller
       $sihRecord['OFFICE_OTHER_NAME'] = null;
       $sihRecord['COMPANY_CODE']      = $configures[array_search('COMPANY_CODE', array_column($configures, 'ID'))]['VALUE'];
       $sihRecord['COMPANY_NAME']      = $configures[array_search('COMPANY_NAME', array_column($configures, 'ID'))]['VALUE'];
-      $sihRecord['ORDER_DATE']        = null;
-      $sihRecord['ORDER_TIME']        = null;
+      $sihRecord['ORDER_DATE']        = date("Y-m-d");
+      $sihRecord['ORDER_TIME']        = date("H:i");
       $sihRecord['SHIP_DATE']         = $shipDate;
       $sihRecord['DELIVERY_DATE'] 		= $shipDate;
       $sihRecord['DELIVERY_AMPM']     = '3';
@@ -564,6 +564,134 @@ class ShippingController extends Controller
     return $result;
   }
 
+  //-------------------------------------------------------------------------
+  // 自動採番
+  // 空の出荷データを作成して、登録処理を実施する。
+  // 
+  //-------------------------------------------------------------------------
+  public function payo(Request $request){
+
+    // 空の出荷データを作成する。
+    $sihId        = null;
+    $orderNo      = null;
+    $hCode        = $request->input("HCODE");
+    $shipDate     = $request->input("SHIP_DATE");
+    $userCode     = $request->input("USER_CODE");
+
+    // 出荷指示ヘッダー
+    $sihRecord = null;
+    // 出荷指示明細
+    $sidRecords = array();
+    // 定数マスタ
+    $common = new CommonController;
+    $configures = $common->getConfig($request);
+
+    // SIHの用意
+    $sihColumns = Schema::getColumnListing('sih');
+    // SIDの用意
+    $sidColumns = Schema::getColumnListing('sid');
+    // ITEMSの用意
+    $itemsColumns = ProjectCommon::DBTableColumn('ITEMS');
+    $items_rel = null;
+    foreach ($itemsColumns as $column) { $items_rel[$column['COLUMN_NAME']] = null; }
+    // QCODESの用意
+    $qcodesColumns = ProjectCommon::DBTableColumn('QCODES');
+    $qcodes_rel = null;
+    foreach ($qcodesColumns as $column) { $qcodes_rel[$column['COLUMN_NAME']] = null; }
+    // HCODESDの用意
+    $hcodesdColumns = ProjectCommon::DBTableColumn('HCODESD');
+    $hcodesd_rel = null;
+    foreach ($hcodesdColumns as $column) { $hcodesd_rel[$column['COLUMN_NAME']] = null; }
+
+    // sihRecord
+    foreach ($sihColumns as $column) { $sihRecord[$column] = null;}
+    // 個別の設定値
+    $sihRecord['KARI']  = '1';          // 仮
+    $sihRecord['LOADING_RATE']  = '1';
+
+    // 共通する設定値
+    $sihRecord['SIH_ID']            = $sihId;
+    $sihRecord['ORDER_NO']          = $orderNo;
+    $sihRecord['HCODE']             = $hCode;
+    $sihRecord['HNAME']             = hcodesH::where('CODE', $hCode)->first()['NAME'];
+    $sihRecord['OFFICE_CODE']       = $configures[array_search('OFFICE_CODE', array_column($configures, 'ID'))]['VALUE']; // 初期値として設定している営業所を格納
+    $sihRecord['OFFICE_NAME']       = $configures[array_search('OFFICE_NAME', array_column($configures, 'ID'))]['VALUE'];
+    $sihRecord['OFFICE_OTHER_CODE'] = null;
+    $sihRecord['OFFICE_OTHER_NAME'] = null;
+    $sihRecord['COMPANY_CODE']      = $configures[array_search('COMPANY_CODE', array_column($configures, 'ID'))]['VALUE'];
+    $sihRecord['COMPANY_NAME']      = $configures[array_search('COMPANY_NAME', array_column($configures, 'ID'))]['VALUE'];
+    $sihRecord['ORDER_DATE']        = date("Y-m-d");
+    $sihRecord['ORDER_TIME']        = date("H:i");
+    $sihRecord['SHIP_DATE']         = $shipDate;
+    $sihRecord['DELIVERY_DATE']     = $shipDate;
+    $sihRecord['DELIVERY_AMPM']     = '3';
+    $sihRecord['DELIVERY_TIME']     = null;
+    $sihRecord['ORDER_USER']        = $userCode;
+    $sihRecord['ORDER2_USER']       = $userCode;
+    $sihRecord['CUSTOMER_CODE']     = null;
+    $sihRecord['CUSTOMER_NAME']     = null;
+    $sihRecord['DELIVERY_CODE']     = null;
+    $sihRecord['DELIVERY_NAME']     = null;
+    $sihRecord['SUPPLIER_CODE']     = null;
+    $sihRecord['SUPPLIER_NAME']     = null;
+    $sihRecord['WAREHOUSE_CODE']    = null;
+    $sihRecord['WAREHOUSE_NAME']    = null;
+    $sihRecord['DRIVER_CODE']       = null;
+    $sihRecord['DRIVER_NAME']       = null;
+    $sihRecord['TRUCKER_CODE']      = null;
+    $sihRecord['TRUCKER_NAME']      = null;
+    $sihRecord['FLIGHTS']           = null;
+    $sihRecord['FEE']               = null;
+    $sihRecord['ADD_FEE']           = null;
+    $sihRecord['HIGHWAY_FEE']       = null;
+    $sihRecord['FEE_CLASS']       	= null;
+    $sihRecord['OFFICE_FEE_CODE']   = null;
+    $sihRecord['OFFICE_FEE_NAME']   = null;
+    $sihRecord['CONTINUED_SHEET']   = null;
+    $sihRecord['ALL_SHEET']       	= null;
+    $sihRecord['CURRENT_SHEET']     = null;
+    // $sihRecord['LOADING_RATE']      = null;
+    $sihRecord['INVOICE_NOTE']      = null;
+    $sihRecord['DELIVERY_NOTE']     = null;
+    $sihRecord['TAG_NOTE']       		= null;
+    $sihRecord['CONFIRM_DATE']      = null;
+    $sihRecord['STATUS']            = '0';
+    $sihRecord['SNAME']             = status::where('id', '0')->first()['name'];
+    $sihRecord['PRINT_DATE']       	= null;
+    $sihRecord['PRINT_COUNT']       = null;
+    $sihRecord['COMPLETION_DATE']   = null;
+    $sihRecord['PRINT2_DATE']       = null;
+    $sihRecord['PRINT2_COUNT']      = null;
+    $sihRecord['CONFIRM_COUNT']     = null;
+    
+    // 明細が8件ない場合、不足分を埋める。※本当はありえない処理にしたい
+    if (count($sidRecords) < 8) {
+      for ($i = count($sidRecords); $i < 8; $i++) {
+        // 配列の作成
+        $sidRecord = null;
+        foreach ($sidColumns as $column) { $sidRecord[$column] = null;}
+        // 格納
+        $sidRecords[] = $sidRecord;
+      }
+    }
+    for ($i = 0; $i < 8; $i++) {
+      // 初期値設定
+      $sidRecords[$i]['SIH_ID']       = $sihId;
+      // $sidRecords[$i]['ORDER_NO']  = $orderNo;
+      $sidRecords[$i]['RNO']          = ($i + 1);
+      $sidRecords[$i]['items_rel']    = $items_rel;
+      $sidRecords[$i]['qcodes_rel']   = $qcodes_rel;
+      $sidRecords[$i]['QNAME']        = $qcodes_rel['NAME'];
+      $sidRecords[$i]['hcodesd_rel']  = $hcodesd_rel;
+      $sidRecords[$i]['SAMPLE']       = $hcodesd_rel['SAMPLE'];
+    }
+
+    $request->merge(['isNew' => true]);
+    $request->merge(['sihRecord' => $sihRecord]);
+    $request->merge(['sidRecords' => $sidRecords]);
+
+    return $this->regist($request, 0, 'susp');
+  }
   //-------------------------------------------------------------------------
   // 出荷指示登録・更新
   // 一時登録と完了があるが、入力値チェックの違いのみの為、共通処理をコールしている
@@ -1217,6 +1345,127 @@ class ShippingController extends Controller
 
     //ページを追加
     $pdf->addPage($html_data);
+    $pdf-> send();
+  }
+
+  //-------------------------------------------------------------------------
+  // 伝票印刷
+  // 
+  // 
+  //-------------------------------------------------------------------------
+  public  function slipPrint2(Request $request, $sihId){
+
+    // ヘッダーの取得
+    $sihRecord = sih::where('SIH_ID', $sihId)->first();
+    // 明細の取得
+    $sidRecords = sid::where('SIH_ID', $sihId)->get();
+
+    //日付系のフォーマット定義
+    $shipDate       = $sihRecord['SHIP_DATE'] != null ? date('Y-m-d', strtotime($sihRecord['SHIP_DATE'])) : "";            //出荷日
+    $deliveryDate   = $sihRecord['DELIVERY_DATE'] != null ? date('Y-m-d', strtotime($sihRecord['DELIVERY_DATE'])) : "";    //納品日
+
+    // 1ページ目の設定・データ格納============================================================================================================
+
+    // テンプレートファイルを読み込み
+    $html_data = file_get_contents(".\Template\ship.html");
+
+    // 置換実行
+    $html_data = preg_replace('/_title0_/',        '送 り 状 控',         $html_data);
+    $html_data = preg_replace('/_title1_/',        '送 り 状',            $html_data);
+
+    $html_data = preg_replace('/_orderNo_/',        $sihRecord['ORDER_NO'],         $html_data); 
+    // $html_data = preg_replace('/_companyName_/',    $sihRecord['COMPANY_NAME'],     $html_data);
+    $html_data = preg_replace('/_companyName_/',    $sihRecord['CUSTOMER_NAME'],    $html_data);
+    $html_data = preg_replace('/_deliverryName_/',  $sihRecord['DELIVERY_NAME'],    $html_data);
+    $html_data = preg_replace('/_shipYear_/',       mb_substr($shipDate,0,4),       $html_data);
+    $html_data = preg_replace('/_shipMonth_/',      mb_substr($shipDate,5,2),       $html_data);
+    $html_data = preg_replace('/_shipDay_/',        mb_substr($shipDate,8,2),       $html_data);
+    // $html_data = preg_replace('/_confirmCount_/',   $sihRecord['PRINT2_COUNT'],     $html_data);
+    $printCount2 = $sihRecord['CONFIRM_COUNT'] != null ? $sihRecord['CONFIRM_COUNT'] : 0;
+    $html_data = preg_replace('/_print2Count_/',    $printCount2,                   $html_data);
+    $html_data = preg_replace('/_deliveryYear_/',   mb_substr($deliveryDate,0,4),   $html_data);
+    $html_data = preg_replace('/_deliveryMonth_/',  mb_substr($deliveryDate,5,2),   $html_data);
+    $html_data = preg_replace('/_deliveryDay_/',    mb_substr($deliveryDate,8,2),   $html_data);
+
+    for ($i = 0; $i < 8; $i++) {
+      $sidRecord = $sidRecords[$i];
+      $html_data = preg_replace('/_itemName' . $i . '_/'  , $sidRecord['ITEM_NAME'],      $html_data);
+      $html_data = preg_replace('/_QtyPerCtn' . $i . '_/' , $sidRecord['QTY_PER_CTN'],    $html_data);
+      $html_data = preg_replace('/_QtyCtn' . $i . '_/'    , $sidRecord['QTY_CTN'],        $html_data);
+      $html_data = preg_replace('/_Qty' . $i . '_/'       , $sidRecord['QTY'],            $html_data);
+    }
+
+    // logoの表示分岐
+    if ($sihRecord['CUSTOMER_CODE'] != '1487700') {
+      $html_data = preg_replace('/_hane_/','data:image/png;base64,'.base64_encode(file_get_contents('./images/羽根.png')), $html_data);
+    } else {
+      $html_data = preg_replace('/_hane_/','data:image/png;base64,'.base64_encode(file_get_contents('./images/日飾.png')), $html_data);
+    }
+
+    $html_data = preg_replace('/_warehouseName_/',  $sihRecord['WAREHOUSE_NAME'],   $html_data);
+    $html_data = preg_replace('/_truckerName_/',    $sihRecord['TRUCKER_NAME'],     $html_data);
+    $html_data = preg_replace('/_driverName_/',     $sihRecord['DRIVER_NAME'],      $html_data);
+
+    // 1ページ目の設定・データ格納============================================================================================================
+
+    // 2ページ目の設定・データ格納============================================================================================================
+
+    // テンプレートファイルを読み込み
+    $html_data2 = file_get_contents(".\Template\ship.html");
+
+    // 置換実行
+    $html_data2 = preg_replace('/_title0_/',        '送 り 状',         $html_data2);
+    $html_data2 = preg_replace('/_title1_/',        '受 取 書',         $html_data2);
+
+    $html_data2 = preg_replace('/_orderNo_/',        $sihRecord['ORDER_NO'],         $html_data2); 
+    // $html_data2 = preg_replace('/_companyName_/',    $sihRecord['COMPANY_NAME'],     $html_data2);
+    $html_data2 = preg_replace('/_companyName_/',    $sihRecord['CUSTOMER_NAME'],    $html_data2);
+    $html_data2 = preg_replace('/_deliverryName_/',  $sihRecord['DELIVERY_NAME'],    $html_data2);
+    $html_data2 = preg_replace('/_shipYear_/',       mb_substr($shipDate,0,4),       $html_data2);
+    $html_data2 = preg_replace('/_shipMonth_/',      mb_substr($shipDate,5,2),       $html_data2);
+    $html_data2 = preg_replace('/_shipDay_/',        mb_substr($shipDate,8,2),       $html_data2);
+    // $html_data2 = preg_replace('/_confirmCount_/',   $sihRecord['PRINT2_COUNT'],     $html_data2);
+    $printCount2 = $sihRecord['CONFIRM_COUNT'] != null ? $sihRecord['CONFIRM_COUNT'] : 0;
+    $html_data2 = preg_replace('/_print2Count_/',    $printCount2,                   $html_data2);
+    $html_data2 = preg_replace('/_deliveryYear_/',   mb_substr($deliveryDate,0,4),   $html_data2);
+    $html_data2 = preg_replace('/_deliveryMonth_/',  mb_substr($deliveryDate,5,2),   $html_data2);
+    $html_data2 = preg_replace('/_deliveryDay_/',    mb_substr($deliveryDate,8,2),   $html_data2);
+
+    for ($i = 0; $i < 8; $i++) {
+      $sidRecord = $sidRecords[$i];
+      $html_data2 = preg_replace('/_itemName' . $i . '_/'  , $sidRecord['ITEM_NAME'],      $html_data2);
+      $html_data2 = preg_replace('/_QtyPerCtn' . $i . '_/' , $sidRecord['QTY_PER_CTN'],    $html_data2);
+      $html_data2 = preg_replace('/_QtyCtn' . $i . '_/'    , $sidRecord['QTY_CTN'],        $html_data2);
+      $html_data2 = preg_replace('/_Qty' . $i . '_/'       , $sidRecord['QTY'],            $html_data2);
+    }
+
+    // logoの表示分岐
+    if ($sihRecord['CUSTOMER_CODE'] != '1487700') {
+      $html_data2 = preg_replace('/_hane_/','data:image/png;base64,'.base64_encode(file_get_contents('./images/羽根.png')),$html_data2);
+    } else {
+      $html_data2 = preg_replace('/_hane_/','data:image/png;base64,'.base64_encode(file_get_contents('./images/日飾.png')),$html_data2);
+    }
+
+    $html_data2 = preg_replace('/_warehouseName_/',  $sihRecord['WAREHOUSE_NAME'],   $html_data2);
+    $html_data2 = preg_replace('/_truckerName_/',    $sihRecord['TRUCKER_NAME'],     $html_data2);
+    $html_data2 = preg_replace('/_driverName_/',     $sihRecord['DRIVER_NAME'],      $html_data2);
+
+    // 2ページ目の設定・データ格納============================================================================================================
+
+    $pdf = new Pdf([
+      // エンコード形式
+      'encoding'      => 'utf-8',
+      'page-size'     => 'A4',
+      // 'orientation'   => 'landscape', // 設定すると横向きになる
+      'margin-top'    => 0,
+      'margin-left'   => 0,
+      'margin-right'  => 0,
+      'margin-bottom' => 0,
+    ]);
+
+    //ページを追加
+    $pdf->addPage($html_data);
+    $pdf->addPage($html_data2);
     $pdf-> send();
   }
 

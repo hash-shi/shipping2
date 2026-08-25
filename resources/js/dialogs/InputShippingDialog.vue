@@ -26,7 +26,7 @@
             <div class="value" >
               <label v-for="(hcodeH, index) of this.HCODESH" :key="index">
                 <br v-if="index!=0 && (index % 3)==0" />
-                <input type="radio" :id="'hcodeH_'+index" name="r2" :value="hcodeH.CODE" v-model="HCODE" :ref="'inputShipping_hcodeH_' + index" @keyup.enter="moveToNextField('inputShipping_hcodeH_' + index)" v-on:click="changeOrderNo(hcodeH.CODE)" >{{ hcodeH.NAME }}
+                <input type="radio" :id="'hcodeH_'+index" name="r2" :value="hcodeH.CODE" v-model="HCODE" :ref="'inputShipping_hcodeH_' + index" @keyup.enter="moveToNextField('inputShipping_hcodeH_' + index)" v-on:click="changeOrderNo(hcodeH.CODE,hcodeH.KBN)" >{{ hcodeH.NAME }}
               </label>
             </div>
           </div>
@@ -47,8 +47,9 @@
           </div>
 
           <div style="width:100%;text-align:center;margin-top: 40px;">
-            <button v-if="mode=='new'"   style="width:150px;height:40px;" ref="inputShipping_regist" v-on:click="inputShipping_regist" @keyup.enter="inputShipping_regist">新規登録</button>
-            <button v-if="mode=='copy'"  style="width:150px;height:40px;" ref="inputShipping_copy"   v-on:click="inputShipping_copy"   @keyup.enter="inputShipping_copy">複写</button>
+            <button v-if="mode=='new'"  style="width:150px;height:40px;" ref="inputShipping_regist" v-on:click="inputShipping_regist" @keyup.enter="inputShipping_regist">新規登録</button>
+            <button v-if="mode=='new'"  style="width:150px;height:40px;" ref="inputShipping_payout" v-on:click="inputShipping_payout" @keyup.enter="inputShipping_payout">番号払い出し</button>
+            <button v-if="mode=='copy'" style="width:150px;height:40px;" ref="inputShipping_copy"   v-on:click="inputShipping_copy"   @keyup.enter="inputShipping_copy">複写</button>
           </div>
         </div>
       </div>
@@ -102,6 +103,50 @@ export default {
     },
 
     //---------------------------------------------------------------------
+    // 採番払出
+    //---------------------------------------------------------------------
+    inputShipping_payout: async function(){
+      // 空の出荷データを作成/登録する。
+      if (confirm("受注No：" + this.ORDER_NO + " を払い出します。よろしいですか？")) {
+        await axios.post("/api/shipping/detail/payo", {
+          'isNew'     : true,
+          'HCODE'     : this.HCODE,
+          'SHIP_DATE' : this.SHIP_DATE,
+          'USER_CODE' : store.state.userCode,
+        }).then(response => {
+          var sihId = response.data.SIH_ID;
+          var orderNo = response.data.ORDER_NO;
+          alert("確定しました。" + "\r\n" + "受注No：" + orderNo);
+
+          this.$emit("research");
+        });
+
+        // 受注NO(通常)
+        await axios.get("/api/orderNo", {})
+        .then(response => {
+          this.ORDER_NO_ = response.data;
+          // 初期表示として通常を表示する。
+          this.ORDER_NO = this.ORDER_NO_;
+        });
+          
+        // 受注NO(在庫調整用)
+        await axios.get("/api/adjustNo", {})
+        .then(response => {
+          this.ADJUST_NO_ = response.data;
+        });
+        
+        if (this.hCode != null && this.hCode != "") { this.HCODE = this.hCode; }
+
+        if (this.hCode!=7) {
+          this.ORDER_NO = this.ORDER_NO_;
+        } else {
+          this.ORDER_NO = this.ADJUST_NO_;
+        }
+
+      }
+    },
+
+    //---------------------------------------------------------------------
     // 複写
     //---------------------------------------------------------------------
     inputShipping_copy: async function(){
@@ -121,6 +166,7 @@ export default {
       this.nextFields.push({ 'id':'inputShipping_orderNo', 	'disabled': true, });
       this.nextFields.push({ 'id':'inputShipping_shipDate', 'disabled': false, });
       this.nextFields.push({ 'id':'inputShipping_regist', 	'disabled': !(this.mode=='new'), });
+      this.nextFields.push({ 'id':'inputShipping_payout', 	'disabled': !(this.mode=='new'), });
       this.nextFields.push({ 'id':'inputShipping_copy', 		'disabled': !(this.mode!='new'), });
     },
     moveToNextField(nowField) {
@@ -149,9 +195,19 @@ export default {
     //---------------------------------------------------------------------
     // 受注No表示切替え
     //---------------------------------------------------------------------
-    changeOrderNo(code) {
-      // 選択している取区に応じて表示する受注Noを切り替える。
-      if (code != '7') {
+    changeOrderNo(code, kbn) {
+      // 20260722_受注Noの切り替えと制御ボタンの切り替えを行う。
+      // // 選択している取区に応じて表示する受注Noを切り替える。
+      // if (code != '7') {
+      //   // 通常
+      //   this.ORDER_NO = this.ORDER_NO_;
+      // } else {
+      //   // 在庫調整用
+      //   this.ORDER_NO = this.ADJUST_NO_;
+      // }
+
+      // 表示する受注No
+      if (kbn != "4") {
         // 通常
         this.ORDER_NO = this.ORDER_NO_;
       } else {

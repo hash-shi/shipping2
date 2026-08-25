@@ -265,7 +265,7 @@
     </div>
   
     <!-- 新規登録 -->
-    <InputShippingDialog  v-if="showDialog.InputShipping" :mode="'new'" :hCode="1" @close="closeDialog('InputShipping')" @complete="detail" ></InputShippingDialog>
+    <InputShippingDialog  v-if="showDialog.InputShipping" :mode="'new'" :hCode="1" @close="closeDialog('InputShipping')" @complete="detail" @research="search"></InputShippingDialog>
     <!-- 得意先 -->
     <CustomerSearchDialog v-if="showDialog.CustomerSearch" :officeCode="this.officeCode" :hCode="String(1)"  @close="closeDialog('CustomerSearch')"  @select="selectCustomerDialog"></CustomerSearchDialog>
     <!-- 運転手 -->

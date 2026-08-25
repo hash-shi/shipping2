@@ -53,6 +53,7 @@ Route::post('shipping/detail/conf'                              , "App\Http\Cont
 Route::post('shipping/detail/comp'                              , "App\Http\Controllers\api\ShippingController@comp");
 Route::post('shipping/detail/inst'                              , "App\Http\Controllers\api\ShippingController@inst");
 Route::post('shipping/detail/slip'                              , "App\Http\Controllers\api\ShippingController@slip");
+Route::post('shipping/detail/payo'                              , "App\Http\Controllers\api\ShippingController@payo");
 Route::delete('shipping'                                        , "App\Http\Controllers\api\ShippingController@del");
 
 Route::post('shipping/detail/susp_'                             , "App\Http\Controllers\api\ShippingController@susp_");

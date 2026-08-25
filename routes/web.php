@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 //印刷系統
 Route::get('/shipping/detail/instructions/{sihId}'                  , "App\Http\Controllers\api\ShippingController@instructionPrint");
-Route::get('/shipping/detail/slip/{sihId}'                          , "App\Http\Controllers\api\ShippingController@slipPrint");
+// Route::get('/shipping/detail/slip/{sihId}'                          , "App\Http\Controllers\api\ShippingController@slipPrint");
+Route::get('/shipping/detail/slip/{sihId}'                          , "App\Http\Controllers\api\ShippingController@slipPrint2");
 
 Route::get('/qrPrint/{printResultID}'                               , "App\Http\Controllers\api\QrprintController@qrPrint");
 
